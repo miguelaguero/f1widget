@@ -1,0 +1,46 @@
+name: F1WidgetApp
+options:
+  bundleIdPrefix: com.f1widget
+targets:
+  F1WidgetApp:
+    type: application
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - Sources/App
+      - Sources/Shared
+    dependencies:
+      - target: F1WidgetExtension
+        embed: true
+    settings:
+      GENERATE_INFOPLIST_FILE: YES
+      PRODUCT_BUNDLE_IDENTIFIER: com.f1widget.app
+      MARKETING_VERSION: "1.1"
+      CURRENT_PROJECT_VERSION: "2"
+      CODE_SIGN_IDENTITY: "-"
+      AD_HOC_CODE_SIGNING_ALLOWED: YES
+      CODE_SIGN_ENTITLEMENTS: Sources/Shared/Entitlements.plist
+  
+  F1WidgetExtension:
+    type: app-extension
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - Sources/Widget
+      - Sources/Shared
+    settings:
+      GENERATE_INFOPLIST_FILE: NO
+      INFOPLIST_FILE: Sources/Widget/Info.plist
+      PRODUCT_BUNDLE_IDENTIFIER: com.f1widget.app.widget
+      LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks"
+      CODE_SIGN_IDENTITY: "-"
+      AD_HOC_CODE_SIGNING_ALLOWED: YES
+      CODE_SIGN_ENTITLEMENTS: Sources/Shared/Entitlements.plist
+
+schemes:
+  F1WidgetApp:
+    build:
+      targets:
+        F1WidgetApp: [all]
+    run:
+      executable: F1WidgetApp
