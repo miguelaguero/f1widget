@@ -92,11 +92,12 @@ struct F1WidgetEntryView : View {
                                         .scaledToFit()
                                     #endif
                                 } else {
-                                    Image(systemName: "car.fill")
+                                    Image(systemName: "flag.checkered")
                                         .resizable()
                                         .scaledToFit()
                                         .foregroundColor(.secondary)
                                 }
+
                             }
                             .frame(width: 24, height: 24)
 
