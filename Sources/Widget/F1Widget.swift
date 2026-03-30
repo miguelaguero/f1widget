@@ -102,9 +102,11 @@ struct F1WidgetEntryView : View {
                         .foregroundColor(.secondary)
                 }
             }
-            .frame(maxWidth: (family == .systemLarge || family == .systemExtraLarge) ? 220 : .infinity)
+            // Fix width for Extra Large to allow map on the right
+            .frame(maxWidth: (family == .systemExtraLarge) ? 220 : .infinity)
             
-            if (family == .systemLarge || family == .systemExtraLarge), let trackMapData = entry.trackMapData, let platformImage = PlatformImage(data: trackMapData) {
+            // Map only for Extra Large
+            if family == .systemExtraLarge, let trackMapData = entry.trackMapData, let platformImage = PlatformImage(data: trackMapData) {
                 VStack {
                     Spacer()
                     #if canImport(AppKit)
@@ -154,7 +156,7 @@ struct F1Widget: Widget {
             F1WidgetEntryView(entry: entry)
         }
         .configurationDisplayName("F1 Race Results")
-        .description("Displays top 10 results and track map of the most recent F1 race.")
+        .description("Displays race results and track map in the Extra Large layout.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .systemExtraLarge])
     }
 }
