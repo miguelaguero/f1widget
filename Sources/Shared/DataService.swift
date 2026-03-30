@@ -28,7 +28,7 @@ final class F1DataService: Sendable {
         "cadillac": "cadillac/2026cadillaclogowhite.webp"
     ]
 
-    private let trackMapBaseUrl = "https://media.formula1.com/image/upload/f_auto,q_auto/v1677245653/content/dam/fom-website/2018-redesign-assets/circuit-maps/16x9/white/"
+    private let trackMapBaseUrl = "https://media.formula1.com/image/upload/f_auto,q_auto/v1677245653/content/dam/fom-website/2018-redesign-assets/circuit-maps/16x9/"
     private let circuitMap: [String: String] = [
         "bahrain": "Bahrain.png",
         "jeddah": "Saudi_Arabia.png",
@@ -126,18 +126,38 @@ final class F1DataService: Sendable {
     }
 
     private func fetchTrackMapData(for circuitId: String) async -> Data? {
-        guard let filename = circuitMap[circuitId],
-              let url = URL(string: trackMapBaseUrl + filename) else {
+        guard let filename = circuitMap[circuitId] else {
+            print("No track map mapping for circuitId: \(circuitId)")
             return nil
         }
 
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            return data
-        } catch {
-            print("Error fetching track map for \(circuitId): \(error)")
-            return nil
+        // Try different URL patterns
+        let baseUrls = [
+            "https://media.formula1.com/image/upload/f_auto,q_auto/v1677245653/content/dam/fom-website/2018-redesign-assets/circuit-maps/16x9/",
+            "https://media.formula1.com/image/upload/content/dam/fom-website/2018-redesign-assets/circuit-maps/16x9/",
+            "https://media.formula1.com/image/upload/v1/content/dam/fom-website/2018-redesign-assets/circuit-maps/16x9/"
+        ]
+
+        for baseUrl in baseUrls {
+            guard let url = URL(string: baseUrl + filename) else { continue }
+            print("Attempting to fetch track map from: \(url)")
+            
+            do {
+                let (data, response) = try await URLSession.shared.data(from: url)
+                if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                    print("Successfully fetched track map from: \(url)")
+                    return data
+                } else {
+                    let code = (response as? HTTPURLResponse)?.statusCode ?? -1
+                    print("Failed to fetch track map (Status \(code)) from: \(url)")
+                }
+            } catch {
+                print("Error fetching track map from \(url): \(error.localizedDescription)")
+            }
         }
+
+        print("All track map fetch attempts failed for circuitId: \(circuitId)")
+        return nil
     }
 
     private func fetchLogoData(for constructorId: String) async -> Data? {
