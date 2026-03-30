@@ -11,6 +11,7 @@ typealias PlatformImage = UIImage
 struct SimpleEntry: TimelineEntry {
     let date: Date
     let raceName: String
+    let circuitName: String
     let raceDate: String
     let results: [RaceEntryData]
     let trackMapData: Data?
@@ -18,7 +19,7 @@ struct SimpleEntry: TimelineEntry {
 
 struct Provider: TimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), raceName: "MONACO GRAND PRIX", raceDate: "2024-05-26", results: F1DataService.shared.getMockResults(), trackMapData: nil)
+        SimpleEntry(date: Date(), raceName: "MONACO GRAND PRIX", circuitName: "Circuit de Monaco", raceDate: "2024-05-26", results: F1DataService.shared.getMockResults(), trackMapData: nil)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
@@ -28,8 +29,8 @@ struct Provider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<SimpleEntry>) -> ()) {
         Task {
-            let (results, raceName, raceDate, trackMapData) = (try? await F1DataService.shared.fetchLatestResults()) ?? (F1DataService.shared.getMockResults(), "LATEST RACE", "", nil)
-            let entry = SimpleEntry(date: Date(), raceName: raceName, raceDate: raceDate, results: results, trackMapData: trackMapData)
+            let (results, raceName, circuitName, raceDate, trackMapData) = (try? await F1DataService.shared.fetchLatestResults()) ?? (F1DataService.shared.getMockResults(), "LATEST RACE", "Circuit Name", "", nil)
+            let entry = SimpleEntry(date: Date(), raceName: raceName, circuitName: circuitName, raceDate: raceDate, results: results, trackMapData: trackMapData)
             
             let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date().addingTimeInterval(3600)
             let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
@@ -45,19 +46,57 @@ struct F1WidgetEntryView : View {
 
     var body: some View {
         if family == .systemSmall {
-            VStack(spacing: 12) {
-                Image(systemName: "flag.checkered")
-                    .font(.system(size: 40))
-                    .foregroundColor(.secondary)
-                Text("F1 Widget")
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-                Text("View results on larger widgets")
-                    .font(.caption2)
+            VStack(alignment: .center, spacing: 2) {
+                Spacer(minLength: 0)
+                
+                Image(systemName: "trophy.fill")
+                    .foregroundColor(.yellow)
+                    .font(.system(size: 34))
+                
+                Spacer(minLength: 0)
+                
+                if let winner = entry.results.first {
+                    let names = winner.driverName.uppercased().components(separatedBy: " ")
+                    VStack(spacing: 0) {
+                        Text("WINNER")
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .foregroundColor(.secondary)
+                            .padding(.bottom, 2)
+                        
+                        VStack(spacing: -3) {
+                            if names.count >= 2 {
+                                Text(names[0])
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.3)
+                                Text(names.dropFirst().joined(separator: " "))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.3)
+                            } else {
+                                Text(winner.driverName.uppercased())
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.3)
+                            }
+                        }
+                        .font(.system(size: 34, weight: .black, design: .rounded))
+                    }
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 4)
+                } else {
+                    Text("No data")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer(minLength: 0)
+                
+                Text(entry.circuitName.uppercased())
+                    .font(.system(size: 8, weight: .bold, design: .monospaced))
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
+                    .lineLimit(1)
+                    .padding(.bottom, 4)
             }
-            .padding()
+            .padding(8)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .containerBackground(Color.clear, for: .widget)
         } else {
@@ -167,14 +206,14 @@ struct F1WidgetEntryView : View {
 @main
 #endif
 struct F1Widget: Widget {
-    let kind: String = "F1Widget"
+    let kind: String = "F1RaceWidget"
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: Provider()) { entry in
             F1WidgetEntryView(entry: entry)
         }
         .configurationDisplayName("F1Race Widget")
-        .description("Displays race results and track map in the Extra Large layout.")
+        .description("Displays latest race results and track map.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .systemExtraLarge])
     }
 }
@@ -182,7 +221,7 @@ struct F1Widget: Widget {
 struct F1Widget_Previews: PreviewProvider {
     static var previews: some View {
         let dummyResults = F1DataService.shared.getMockResults()
-        let dummyEntry = SimpleEntry(date: Date(), raceName: "MONACO GRAND PRIX", raceDate: "2024-05-26", results: dummyResults, trackMapData: nil)
+        let dummyEntry = SimpleEntry(date: Date(), raceName: "MONACO GRAND PRIX", circuitName: "Circuit de Monaco", raceDate: "2024-05-26", results: dummyResults, trackMapData: nil)
         
         Group {
             F1WidgetEntryView(entry: dummyEntry)

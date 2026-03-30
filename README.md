@@ -5,7 +5,7 @@ A native macOS widget that displays the top 10 results from the most recent Form
 ## Features
 - Fetches real-time data from the Jolpica-F1 API.
 - Displays driver position, manufacturer icon, and driver name.
-- Supports Small, Medium, and Large widget sizes.
+- Supports Small, Medium, Large, and Extra Large widget sizes.
 - Built with SwiftUI and WidgetKit.
 
 ## Prerequisites

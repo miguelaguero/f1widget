@@ -55,7 +55,7 @@ final class F1DataService: Sendable {
         "yas_marina": "Abu_Dhabi_Circuit.png"
     ]
 
-    func fetchLatestResults() async throws -> ([RaceEntryData], String, String, Data?) {
+    func fetchLatestResults() async throws -> ([RaceEntryData], String, String, String, Data?) {
         print("Starting F1 results fetch from: \(resultsUrl)")
         do {
             let (data, response) = try await URLSession.shared.data(from: resultsUrl)
@@ -74,12 +74,12 @@ final class F1DataService: Sendable {
 
             guard let latestRace = raceResponse.mrData.raceTable.races.first else {
                 print("No races found in API response")
-                return (getMockResults(), "NO DATA", "", nil)
+                return (getMockResults(), "NO DATA", "NO CIRCUIT", "", nil)
             }
             
             guard let results = latestRace.results else {
                 print("No results found for race: \(latestRace.raceName)")
-                return (getMockResults(), "NO RESULTS", latestRace.date, nil)
+                return (getMockResults(), "NO RESULTS", latestRace.circuit.circuitName, latestRace.date, nil)
             }
 
             print("Found \(results.count) results for \(latestRace.raceName)")
@@ -117,7 +117,7 @@ final class F1DataService: Sendable {
             }
 
             print("Successfully prepared \(entries.count) entries for widget")
-            return (entries, latestRace.raceName, latestRace.date, trackMapData)
+            return (entries, latestRace.raceName, latestRace.circuit.circuitName, latestRace.date, trackMapData)
         } catch {
             print("Error in fetchLatestResults: \(error.localizedDescription)")
             throw error
