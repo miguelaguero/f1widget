@@ -125,6 +125,11 @@ final class F1DataService: Sendable {
         }
     }
 
+    func getTrackMapUrl(for circuitId: String) -> URL? {
+        guard let filename = circuitMap[circuitId] else { return nil }
+        return URL(string: "https://media.formula1.com/image/upload/f_auto,q_auto/v1677245653/content/dam/fom-website/2018-redesign-assets/circuit-maps/16x9/white/" + filename)
+    }
+
     private func fetchTrackMapData(for circuitId: String) async -> Data? {
         guard let filename = circuitMap[circuitId] else {
             print("No track map mapping for circuitId: \(circuitId)")

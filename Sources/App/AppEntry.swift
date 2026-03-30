@@ -42,16 +42,32 @@ struct F1WidgetApp: App {
                     .frame(maxHeight: .infinity)
                 } else {
                     List(results, id: \.round) { race in
-                        VStack(alignment: .leading) {
-                            Text(race.raceName)
-                                .font(.headline)
-                            Text(race.date)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            if let winner = race.results?.first {
-                                Text("Winner: \(winner.driver.fullName)")
-                                    .font(.subheadline)
-                                    .foregroundColor(.primary)
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(race.raceName)
+                                    .font(.headline)
+                                Text(race.date)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                if let winner = race.results?.first {
+                                    Text("Winner: \(winner.driver.fullName)")
+                                        .font(.subheadline)
+                                        .foregroundColor(.primary)
+                                }
+                            }
+                            Spacer()
+                            if let url = F1DataService.shared.getTrackMapUrl(for: race.circuit.circuitId) {
+                                AsyncImage(url: url) { image in
+                                    image.resizable()
+                                        .scaledToFit()
+                                        .frame(width: 80, height: 45)
+                                        .padding(4)
+                                        .background(Color.white.opacity(0.1))
+                                        .cornerRadius(4)
+                                } placeholder: {
+                                    Color.gray.opacity(0.1)
+                                        .frame(width: 80, height: 45)
+                                }
                             }
                         }
                         .padding(.vertical, 4)
