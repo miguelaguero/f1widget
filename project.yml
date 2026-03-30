@@ -32,6 +32,7 @@ targets:
     settings:
       GENERATE_INFOPLIST_FILE: NO
       INFOPLIST_FILE: Sources/Widget/Info.plist
+      PRODUCT_NAME: F1Race Widget
       PRODUCT_BUNDLE_IDENTIFIER: com.f1widget.app.widget
       LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks"
       CODE_SIGN_IDENTITY: "-"
