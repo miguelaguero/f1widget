@@ -173,7 +173,7 @@ struct F1Widget: Widget {
         StaticConfiguration(kind: kind, provider: Provider()) { entry in
             F1WidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("F1 Race Results")
+        .configurationDisplayName("F1Race Widget")
         .description("Displays race results and track map in the Extra Large layout.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .systemExtraLarge])
     }

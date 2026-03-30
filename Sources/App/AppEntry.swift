@@ -9,7 +9,7 @@ struct F1WidgetApp: App {
         WindowGroup {
             VStack(spacing: 20) {
                 HStack {
-                    Image(systemName: "car.2.fill")
+                    Image(systemName: "flag.checkered")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 40, height: 40)
