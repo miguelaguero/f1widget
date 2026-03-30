@@ -28,32 +28,31 @@ final class F1DataService: Sendable {
         "cadillac": "cadillac/2026cadillaclogowhite.webp"
     ]
 
-    private let trackMapBaseUrl = "https://media.formula1.com/image/upload/f_auto,q_auto/v1677245653/content/dam/fom-website/2018-redesign-assets/circuit-maps/16x9/"
     private let circuitMap: [String: String] = [
-        "bahrain": "Bahrain.png",
-        "jeddah": "Saudi_Arabia.png",
-        "albert_park": "Australia.png",
-        "suzuka": "Japan.png",
-        "shanghai": "China.png",
-        "miami": "Miami.png",
-        "imola": "Emilia_Romagna.png",
-        "monaco": "Monaco.png",
-        "villeneuve": "Canada.png",
-        "catalunya": "Spain.png",
-        "red_bull_ring": "Austria.png",
-        "silverstone": "Great_Britain.png",
-        "hungaroring": "Hungary.png",
-        "spa": "Belgium.png",
-        "zandvoort": "Netherlands.png",
-        "monza": "Italy.png",
-        "baku": "Azerbaijan.png",
-        "marina_bay": "Singapore.png",
-        "americas": "USA.png",
-        "rodriguez": "Mexico.png",
-        "interlagos": "Brazil.png",
-        "vegas": "Las_Vegas.png",
-        "losail": "Qatar.png",
-        "yas_marina": "Abu_Dhabi.png"
+        "bahrain": "Bahrain_Circuit.png",
+        "jeddah": "Saudi_Arabia_Circuit.png",
+        "albert_park": "Australia_Circuit.png",
+        "suzuka": "Japan_Circuit.png",
+        "shanghai": "China_Circuit.png",
+        "miami": "Miami_Circuit.png",
+        "imola": "Emilia_Romagna_Circuit.png",
+        "monaco": "Monaco_Circuit.png",
+        "villeneuve": "Canada_Circuit.png",
+        "catalunya": "Spain_Circuit.png",
+        "red_bull_ring": "Austria_Circuit.png",
+        "silverstone": "Great_Britain_Circuit.png",
+        "hungaroring": "Hungary_Circuit.png",
+        "spa": "Belgium_Circuit.png",
+        "zandvoort": "Netherlands_Circuit.png",
+        "monza": "Italy_Circuit.png",
+        "baku": "Azerbaijan_Circuit.png",
+        "marina_bay": "Singapore_Circuit.png",
+        "americas": "USA_Circuit.png",
+        "rodriguez": "Mexico_Circuit.png",
+        "interlagos": "Brazil_Circuit.png",
+        "vegas": "Las_Vegas_Circuit.png",
+        "losail": "Qatar_Circuit.png",
+        "yas_marina": "Abu_Dhabi_Circuit.png"
     ]
 
     func fetchLatestResults() async throws -> ([RaceEntryData], String, String, Data?) {
@@ -127,7 +126,8 @@ final class F1DataService: Sendable {
 
     func getTrackMapUrl(for circuitId: String) -> URL? {
         guard let filename = circuitMap[circuitId] else { return nil }
-        return URL(string: "https://media.formula1.com/image/upload/f_auto,q_auto/v1677245653/content/dam/fom-website/2018-redesign-assets/circuit-maps/16x9/white/" + filename)
+        let baseUrl = "https://media.formula1.com/image/upload/f_auto,q_auto/v1677245653/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/"
+        return URL(string: baseUrl + filename)
     }
 
     private func fetchTrackMapData(for circuitId: String) async -> Data? {
@@ -138,9 +138,9 @@ final class F1DataService: Sendable {
 
         // Try different URL patterns
         let baseUrls = [
-            "https://media.formula1.com/image/upload/f_auto,q_auto/v1677245653/content/dam/fom-website/2018-redesign-assets/circuit-maps/16x9/",
-            "https://media.formula1.com/image/upload/content/dam/fom-website/2018-redesign-assets/circuit-maps/16x9/",
-            "https://media.formula1.com/image/upload/v1/content/dam/fom-website/2018-redesign-assets/circuit-maps/16x9/"
+            "https://media.formula1.com/image/upload/f_auto,q_auto/v1677245653/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/",
+            "https://media.formula1.com/image/upload/f_auto,c_limit,q_auto,w_1320/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/",
+            "https://media.formula1.com/image/upload/v1/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/"
         ]
 
         for baseUrl in baseUrls {

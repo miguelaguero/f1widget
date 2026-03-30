@@ -43,7 +43,7 @@ struct F1WidgetEntryView : View {
     @Environment(\.widgetFamily) var family
 
     var body: some View {
-        HStack(alignment: .top, spacing: 16) {
+        HStack(alignment: .center, spacing: 16) {
             VStack(alignment: .leading, spacing: 6) {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(entry.raceName.uppercased())
@@ -102,13 +102,11 @@ struct F1WidgetEntryView : View {
                         .foregroundColor(.secondary)
                 }
             }
-            // Fix width for Extra Large to allow map on the right
-            .frame(maxWidth: (family == .systemExtraLarge) ? 220 : .infinity)
+            .frame(maxWidth: (family == .systemExtraLarge) ? 220 : .infinity, alignment: .leading)
             
             // Map only for Extra Large
             if family == .systemExtraLarge {
                 VStack {
-                    Spacer()
                     if let trackMapData = entry.trackMapData, let platformImage = PlatformImage(data: trackMapData) {
                         #if canImport(AppKit)
                         Image(nsImage: platformImage)
@@ -116,14 +114,12 @@ struct F1WidgetEntryView : View {
                             .resizable()
                             .scaledToFit()
                             .foregroundColor(Color.primary)
-                            .opacity(0.8)
                         #elseif canImport(UIKit)
                         Image(uiImage: platformImage)
                             .renderingMode(.template)
                             .resizable()
                             .scaledToFit()
                             .foregroundColor(Color.primary)
-                            .opacity(0.8)
                         #endif
                     } else {
                         // Placeholder when map is missing
@@ -136,12 +132,13 @@ struct F1WidgetEntryView : View {
                                 .foregroundColor(.secondary)
                         }
                     }
-                    Spacer()
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.vertical, 8)
             }
         }
         .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(Color.clear, for: .widget)
     }
 
