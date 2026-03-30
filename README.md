@@ -42,4 +42,5 @@ A native macOS widget that displays the top 10 results from the most recent Form
 
 ## Data Sources
 - **Race Data:** [Jolpica-F1 API](https://jolpi.ca/)
-- **Manufacturer Logos:** [subinium/awesome-f1](https://github.com/subinium/awesome-f1)
+- **Manufacturer Logos:** From official Website.
+- **Additional Info:** [subinium/awesome-f1](https://github.com/subinium/awesome-f1)
