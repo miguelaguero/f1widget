@@ -41,6 +41,7 @@ struct Provider: TimelineProvider {
 struct F1WidgetEntryView : View {
     var entry: Provider.Entry
     @Environment(\.widgetFamily) var family
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
@@ -51,15 +52,9 @@ struct F1WidgetEntryView : View {
                         .fontWeight(.black)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
-                    
-                    if !entry.raceDate.isEmpty {
-                        Text(entry.raceDate)
-                            .font(.system(.caption2, design: .monospaced))
-                            .foregroundColor(.secondary)
-                            .fontWeight(.bold)
-                    }
                 }
                 .padding(.bottom, 4)
+                .padding(.top, 16)
 
                 ForEach(Array(entry.results.prefix(maxItems))) { result in
                     HStack(spacing: 8) {
@@ -110,16 +105,12 @@ struct F1WidgetEntryView : View {
                     if let trackMapData = entry.trackMapData, let platformImage = PlatformImage(data: trackMapData) {
                         #if canImport(AppKit)
                         Image(nsImage: platformImage)
-                            .renderingMode(.template)
                             .resizable()
                             .scaledToFit()
-                            .foregroundColor(Color.primary)
                         #elseif canImport(UIKit)
                         Image(uiImage: platformImage)
-                            .renderingMode(.template)
                             .resizable()
                             .scaledToFit()
-                            .foregroundColor(Color.primary)
                         #endif
                     } else {
                         // Placeholder when map is missing
@@ -134,10 +125,9 @@ struct F1WidgetEntryView : View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(.vertical, 8)
             }
         }
-        .padding()
+        .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(Color.clear, for: .widget)
     }

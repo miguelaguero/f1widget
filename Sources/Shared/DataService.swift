@@ -7,25 +7,25 @@ final class F1DataService: Sendable {
 
     private let logoBaseUrl = "https://media.formula1.com/image/upload/c_lfill,w_48/q_auto/v1740000001/common/f1/2026/"
     private let constructorLogoMap: [String: String] = [
-        "red_bull": "redbullracing/2026redbullracinglogowhite.webp",
-        "red_bull_racing": "redbullracing/2026redbullracinglogowhite.webp",
-        "ferrari": "ferrari/2026ferrarilogowhite.webp",
-        "scuderia_ferrari": "ferrari/2026ferrarilogowhite.webp",
-        "mercedes": "mercedes/2026mercedeslogowhite.webp",
-        "mercedes-amg": "mercedes/2026mercedeslogowhite.webp",
-        "mclaren": "mclaren/2026mclarenlogowhite.webp",
-        "aston_martin": "astonmartin/2026astonmartinlogowhite.webp",
-        "alpine": "alpine/2026alpinelogowhite.webp",
-        "williams": "williams/2026williamslogowhite.webp",
-        "rb": "racingbulls/2026racingbullslogowhite.webp",
-        "vcarb": "racingbulls/2026racingbullslogowhite.webp",
-        "racing_bulls": "racingbulls/2026racingbullslogowhite.webp",
-        "haas": "haasf1team/2026haasf1teamlogowhite.webp",
-        "haas_f1_team": "haasf1team/2026haasf1teamlogowhite.webp",
-        "sauber": "audi/2026audilogowhite.webp",
-        "kick_sauber": "audi/2026audilogowhite.webp",
-        "audi": "audi/2026audilogowhite.webp",
-        "cadillac": "cadillac/2026cadillaclogowhite.webp"
+        "red_bull": "redbullracing/2026redbullracing",
+        "red_bull_racing": "redbullracing/2026redbullracing",
+        "ferrari": "ferrari/2026ferrari",
+        "scuderia_ferrari": "ferrari/2026ferrari",
+        "mercedes": "mercedes/2026mercedes",
+        "mercedes-amg": "mercedes/2026mercedes",
+        "mclaren": "mclaren/2026mclaren",
+        "aston_martin": "astonmartin/2026astonmartin",
+        "alpine": "alpine/2026alpine",
+        "williams": "williams/2026williams",
+        "rb": "racingbulls/2026racingbulls",
+        "vcarb": "racingbulls/2026racingbulls",
+        "racing_bulls": "racingbulls/2026racingbulls",
+        "haas": "haasf1team/2026haasf1team",
+        "haas_f1_team": "haasf1team/2026haasf1team",
+        "sauber": "audi/2026audi",
+        "kick_sauber": "audi/2026audi",
+        "audi": "audi/2026audi",
+        "cadillac": "cadillac/2026cadillac"
     ]
 
     private let circuitMap: [String: String] = [
@@ -166,8 +166,13 @@ final class F1DataService: Sendable {
     }
 
     private func fetchLogoData(for constructorId: String) async -> Data? {
-        guard let filename = constructorLogoMap[constructorId],
-              let url = URL(string: logoBaseUrl + filename) else {
+        guard let baseFilename = constructorLogoMap[constructorId] else {
+            return nil
+        }
+        
+        let urlString = logoBaseUrl + baseFilename + "logo.webp"
+        
+        guard let url = URL(string: urlString) else {
             return nil
         }
 
@@ -175,7 +180,7 @@ final class F1DataService: Sendable {
             let (data, _) = try await URLSession.shared.data(from: url)
             return data
         } catch {
-            print("Error fetching logo for \(constructorId): \(error)")
+            print("Error fetching original logo for \(constructorId): \(error)")
             return nil
         }
     }
