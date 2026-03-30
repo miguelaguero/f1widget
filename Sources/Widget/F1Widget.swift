@@ -106,24 +106,36 @@ struct F1WidgetEntryView : View {
             .frame(maxWidth: (family == .systemExtraLarge) ? 220 : .infinity)
             
             // Map only for Extra Large
-            if family == .systemExtraLarge, let trackMapData = entry.trackMapData, let platformImage = PlatformImage(data: trackMapData) {
+            if family == .systemExtraLarge {
                 VStack {
                     Spacer()
-                    #if canImport(AppKit)
-                    Image(nsImage: platformImage)
-                        .renderingMode(.template)
-                        .resizable()
-                        .scaledToFit()
-                        .foregroundColor(Color.primary)
-                        .opacity(0.8)
-                    #elseif canImport(UIKit)
-                    Image(uiImage: platformImage)
-                        .renderingMode(.template)
-                        .resizable()
-                        .scaledToFit()
-                        .foregroundColor(Color.primary)
-                        .opacity(0.8)
-                    #endif
+                    if let trackMapData = entry.trackMapData, let platformImage = PlatformImage(data: trackMapData) {
+                        #if canImport(AppKit)
+                        Image(nsImage: platformImage)
+                            .renderingMode(.template)
+                            .resizable()
+                            .scaledToFit()
+                            .foregroundColor(Color.primary)
+                            .opacity(0.8)
+                        #elseif canImport(UIKit)
+                        Image(uiImage: platformImage)
+                            .renderingMode(.template)
+                            .resizable()
+                            .scaledToFit()
+                            .foregroundColor(Color.primary)
+                            .opacity(0.8)
+                        #endif
+                    } else {
+                        // Placeholder when map is missing
+                        VStack(spacing: 8) {
+                            Image(systemName: "map")
+                                .font(.system(size: 40))
+                                .foregroundColor(.secondary)
+                            Text("Map not available")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                     Spacer()
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
