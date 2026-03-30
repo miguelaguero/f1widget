@@ -29,12 +29,32 @@ struct Race: Codable {
     let round: String
     let raceName: String
     let date: String
+    let circuit: Circuit
     let results: [RaceResult]?
 
     enum CodingKeys: String, CodingKey {
         case season, round, raceName, date
+        case circuit = "Circuit"
         case results = "Results"
     }
+}
+
+struct Circuit: Codable {
+    let circuitId: String
+    let circuitName: String
+    let location: Location
+
+    enum CodingKeys: String, CodingKey {
+        case circuitId, circuitName
+        case location = "Location"
+    }
+}
+
+struct Location: Codable {
+    let lat: String
+    let long: String
+    let locality: String
+    let country: String
 }
 
 struct RaceResult: Codable {

@@ -28,7 +28,35 @@ final class F1DataService: Sendable {
         "cadillac": "cadillac/2026cadillaclogowhite.webp"
     ]
 
-    func fetchLatestResults() async throws -> ([RaceEntryData], String, String) {
+    private let trackMapBaseUrl = "https://media.formula1.com/image/upload/f_auto,q_auto/v1677245653/content/dam/fom-website/2018-redesign-assets/circuit-maps/16x9/white/"
+    private let circuitMap: [String: String] = [
+        "bahrain": "Bahrain.png",
+        "jeddah": "Saudi_Arabia.png",
+        "albert_park": "Australia.png",
+        "suzuka": "Japan.png",
+        "shanghai": "China.png",
+        "miami": "Miami.png",
+        "imola": "Emilia_Romagna.png",
+        "monaco": "Monaco.png",
+        "villeneuve": "Canada.png",
+        "catalunya": "Spain.png",
+        "red_bull_ring": "Austria.png",
+        "silverstone": "Great_Britain.png",
+        "hungaroring": "Hungary.png",
+        "spa": "Belgium.png",
+        "zandvoort": "Netherlands.png",
+        "monza": "Italy.png",
+        "baku": "Azerbaijan.png",
+        "marina_bay": "Singapore.png",
+        "americas": "USA.png",
+        "rodriguez": "Mexico.png",
+        "interlagos": "Brazil.png",
+        "vegas": "Las_Vegas.png",
+        "losail": "Qatar.png",
+        "yas_marina": "Abu_Dhabi.png"
+    ]
+
+    func fetchLatestResults() async throws -> ([RaceEntryData], String, String, Data?) {
         print("Starting F1 results fetch from: \(resultsUrl)")
         do {
             let (data, response) = try await URLSession.shared.data(from: resultsUrl)
@@ -47,15 +75,19 @@ final class F1DataService: Sendable {
 
             guard let latestRace = raceResponse.mrData.raceTable.races.first else {
                 print("No races found in API response")
-                return (getMockResults(), "NO DATA", "")
+                return (getMockResults(), "NO DATA", "", nil)
             }
             
             guard let results = latestRace.results else {
                 print("No results found for race: \(latestRace.raceName)")
-                return (getMockResults(), "NO RESULTS", latestRace.date)
+                return (getMockResults(), "NO RESULTS", latestRace.date, nil)
             }
 
             print("Found \(results.count) results for \(latestRace.raceName)")
+            
+            // Fetch track map
+            let trackMapData = await fetchTrackMapData(for: latestRace.circuit.circuitId)
+
             let top10 = Array(results.prefix(10))
             
             // Use TaskGroup for parallel logo fetching
@@ -86,10 +118,25 @@ final class F1DataService: Sendable {
             }
 
             print("Successfully prepared \(entries.count) entries for widget")
-            return (entries, latestRace.raceName, latestRace.date)
+            return (entries, latestRace.raceName, latestRace.date, trackMapData)
         } catch {
             print("Error in fetchLatestResults: \(error.localizedDescription)")
             throw error
+        }
+    }
+
+    private func fetchTrackMapData(for circuitId: String) async -> Data? {
+        guard let filename = circuitMap[circuitId],
+              let url = URL(string: trackMapBaseUrl + filename) else {
+            return nil
+        }
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            return data
+        } catch {
+            print("Error fetching track map for \(circuitId): \(error)")
+            return nil
         }
     }
 
