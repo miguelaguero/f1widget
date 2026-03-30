@@ -43,11 +43,11 @@ struct F1WidgetEntryView : View {
     @Environment(\.widgetFamily) var family
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: 16) {
             VStack(alignment: .leading, spacing: 6) {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(entry.raceName.uppercased())
-                        .font(.system(.title3, design: .rounded))
+                        .font(.system(family == .systemSmall ? .title3 : .title2, design: .rounded))
                         .fontWeight(.black)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
@@ -59,7 +59,7 @@ struct F1WidgetEntryView : View {
                             .fontWeight(.bold)
                     }
                 }
-                .padding(.bottom, 2)
+                .padding(.bottom, 4)
 
                 ForEach(Array(entry.results.prefix(maxItems))) { result in
                     HStack(spacing: 8) {
@@ -102,8 +102,9 @@ struct F1WidgetEntryView : View {
                         .foregroundColor(.secondary)
                 }
             }
+            .frame(maxWidth: (family == .systemLarge || family == .systemExtraLarge) ? 220 : .infinity)
             
-            if family == .systemLarge, let trackMapData = entry.trackMapData, let platformImage = PlatformImage(data: trackMapData) {
+            if (family == .systemLarge || family == .systemExtraLarge), let trackMapData = entry.trackMapData, let platformImage = PlatformImage(data: trackMapData) {
                 VStack {
                     Spacer()
                     #if canImport(AppKit)
@@ -123,7 +124,7 @@ struct F1WidgetEntryView : View {
                     #endif
                     Spacer()
                 }
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .padding()
@@ -135,7 +136,7 @@ struct F1WidgetEntryView : View {
         case .systemSmall: return 3
         case .systemMedium: return 5
         case .systemLarge: return 10
-        case .systemExtraLarge: return 10
+        case .systemExtraLarge: return 12
         case .accessoryCircular, .accessoryRectangular, .accessoryInline: return 1
         @unknown default: return 5
         }
@@ -153,8 +154,8 @@ struct F1Widget: Widget {
             F1WidgetEntryView(entry: entry)
         }
         .configurationDisplayName("F1 Race Results")
-        .description("Displays top 10 results of the most recent F1 race.")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        .description("Displays top 10 results and track map of the most recent F1 race.")
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .systemExtraLarge])
     }
 }
 
@@ -172,6 +173,9 @@ struct F1Widget_Previews: PreviewProvider {
             
             F1WidgetEntryView(entry: dummyEntry)
                 .previewContext(WidgetPreviewContext(family: .systemLarge))
+                
+            F1WidgetEntryView(entry: dummyEntry)
+                .previewContext(WidgetPreviewContext(family: .systemExtraLarge))
         }
     }
 }
