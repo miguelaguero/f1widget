@@ -161,12 +161,14 @@ struct F1WidgetEntryView : View {
                     if let photoData = winner.driverPhotoData, let platformImage = PlatformImage(data: photoData) {
                         #if canImport(AppKit)
                         Image(nsImage: platformImage)
+                            .renderingMode(.original)
                             .resizable()
                             .scaledToFit()
                             .frame(height: 80)
                             .padding(.top, 8)
                         #elseif canImport(UIKit)
                         Image(uiImage: platformImage)
+                            .renderingMode(.original)
                             .resizable()
                             .scaledToFit()
                             .frame(height: 80)
@@ -187,11 +189,13 @@ struct F1WidgetEntryView : View {
                             if let logoData = winner.logoData, let platformImage = PlatformImage(data: logoData) {
                                 #if canImport(AppKit)
                                 Image(nsImage: platformImage)
+                                    .renderingMode(.original)
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 14, height: 14)
                                 #elseif canImport(UIKit)
                                 Image(uiImage: platformImage)
+                                    .renderingMode(.original)
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 14, height: 14)
@@ -230,18 +234,7 @@ struct F1WidgetEntryView : View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .containerBackground(for: .widget) {
-                if let winner = entry.results.first {
-                    ZStack {
-                        Color(hex: winner.constructorColor)
-                        LinearGradient(
-                            gradient: Gradient(colors: [Color.black.opacity(0.6), Color.clear]),
-                            startPoint: .bottom,
-                            endPoint: .top
-                        )
-                    }
-                } else {
-                    Color.gray
-                }
+                backgroundView
             }
         } else {
             VStack(spacing: 0) {
@@ -250,12 +243,13 @@ struct F1WidgetEntryView : View {
                     Text(entry.raceName.uppercased())
                         .font(.system(family == .systemSmall ? .title3 : .title2, design: .rounded))
                         .fontWeight(.black)
+                        .foregroundColor(.white)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                     
                     Text(entry.circuitName.uppercased())
                         .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.8))
                         .lineLimit(1)
                 }
                 .padding(.top, 10)
@@ -268,16 +262,19 @@ struct F1WidgetEntryView : View {
                                 Text("\(result.position)")
                                     .font(.system(.subheadline, design: .monospaced))
                                     .fontWeight(.bold)
+                                    .foregroundColor(.white)
                                     .frame(width: 22, alignment: .leading)
 
                                 ZStack {
                                     if let logoData = result.logoData, let platformImage = PlatformImage(data: logoData) {
                                         #if canImport(AppKit)
                                         Image(nsImage: platformImage)
+                                            .renderingMode(.original)
                                             .resizable()
                                             .scaledToFit()
                                         #elseif canImport(UIKit)
                                         Image(uiImage: platformImage)
+                                            .renderingMode(.original)
                                             .resizable()
                                             .scaledToFit()
                                         #endif
@@ -285,7 +282,7 @@ struct F1WidgetEntryView : View {
                                         Image(systemName: "flag.checkered")
                                             .resizable()
                                             .scaledToFit()
-                                            .foregroundColor(.secondary)
+                                            .foregroundColor(.white.opacity(0.6))
                                     }
 
                                 }
@@ -294,6 +291,7 @@ struct F1WidgetEntryView : View {
                                 Text(result.driverName)
                                     .font(.subheadline)
                                     .fontWeight(.medium)
+                                    .foregroundColor(.white)
                                     .lineLimit(1)
 
                                 Spacer()
@@ -302,7 +300,7 @@ struct F1WidgetEntryView : View {
                         if entry.results.isEmpty {
                             Text("No data available")
                                 .font(.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.white.opacity(0.7))
                         }
                     }
                     .frame(maxWidth: (family == .systemExtraLarge) ? 220 : .infinity, alignment: .leading)
@@ -313,10 +311,12 @@ struct F1WidgetEntryView : View {
                             if let trackMapData = entry.trackMapData, let platformImage = PlatformImage(data: trackMapData) {
                                 #if canImport(AppKit)
                                 Image(nsImage: platformImage)
+                                    .renderingMode(.original)
                                     .resizable()
                                     .scaledToFit()
                                 #elseif canImport(UIKit)
                                 Image(uiImage: platformImage)
+                                    .renderingMode(.original)
                                     .resizable()
                                     .scaledToFit()
                                 #endif
@@ -325,10 +325,10 @@ struct F1WidgetEntryView : View {
                                 VStack(spacing: 8) {
                                     Image(systemName: "map")
                                         .font(.system(size: 40))
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(.white.opacity(0.6))
                                     Text("Map not available")
                                         .font(.caption2)
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(.white.opacity(0.6))
                                 }
                             }
                         }
@@ -339,7 +339,25 @@ struct F1WidgetEntryView : View {
                 .padding(.bottom, 10)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .containerBackground(Color.clear, for: .widget)
+            .containerBackground(for: .widget) {
+                backgroundView
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var backgroundView: some View {
+        if let winner = entry.results.first {
+            ZStack {
+                Color(hex: winner.constructorColor)
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.black.opacity(0.7), Color.clear]),
+                    startPoint: .bottom,
+                    endPoint: .top
+                )
+            }
+        } else {
+            Color.black
         }
     }
 
