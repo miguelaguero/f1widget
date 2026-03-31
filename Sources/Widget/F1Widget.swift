@@ -1,5 +1,7 @@
 import WidgetKit
 import SwiftUI
+import AppIntents
+
 #if canImport(AppKit)
 import AppKit
 typealias PlatformImage = NSImage
@@ -7,6 +9,76 @@ typealias PlatformImage = NSImage
 import UIKit
 typealias PlatformImage = UIImage
 #endif
+
+// MARK: - App Intents
+
+struct RaceEntity: AppEntity {
+    var id: String // season + round
+    
+    @Property(title: "Race Name")
+    var raceName: String
+    
+    @Property(title: "Circuit Name")
+    var circuitName: String
+    
+    init(id: String, raceName: String, circuitName: String) {
+        self.id = id
+        self.raceName = raceName
+        self.circuitName = circuitName
+    }
+    
+    init() {
+        self.id = ""
+        self.raceName = ""
+        self.circuitName = ""
+    }
+
+    static var typeDisplayRepresentation: TypeDisplayRepresentation = "Race"
+    static var defaultQuery = RaceQuery()
+    
+    var displayRepresentation: DisplayRepresentation {
+        DisplayRepresentation(title: "\(raceName)", subtitle: "\(circuitName)")
+    }
+}
+
+struct RaceQuery: EntityQuery {
+    func entities(for identifiers: [RaceEntity.ID]) async throws -> [RaceEntity] {
+        let allRaces = try? await F1DataService.shared.fetchAllRaces()
+        return (allRaces ?? []).map { race in
+            RaceEntity(id: "\(race.season)-\(race.round)", raceName: race.raceName, circuitName: race.circuit.circuitName)
+        }.filter { identifiers.contains($0.id) }
+    }
+    
+    func suggestedEntities() async throws -> [RaceEntity] {
+        let allRaces = try? await F1DataService.shared.fetchAllRaces()
+        return (allRaces ?? []).map { race in
+            RaceEntity(id: "\(race.season)-\(race.round)", raceName: race.raceName, circuitName: race.circuit.circuitName)
+        }
+    }
+    
+    func entities(matching string: String) async throws -> [RaceEntity] {
+        let allRaces = try? await F1DataService.shared.fetchAllRaces()
+        return (allRaces ?? []).map { race in
+            RaceEntity(id: "\(race.season)-\(race.round)", raceName: race.raceName, circuitName: race.circuit.circuitName)
+        }.filter { $0.raceName.localizedCaseInsensitiveContains(string) || $0.circuitName.localizedCaseInsensitiveContains(string) }
+    }
+}
+
+struct SelectRaceIntent: WidgetConfigurationIntent {
+    static var title: LocalizedStringResource = "Select Race"
+    static var description = IntentDescription("Select which race to display.")
+    
+    @Parameter(title: "Race")
+    var race: RaceEntity?
+    
+    init(race: RaceEntity) {
+        self.race = race
+    }
+    
+    init() {}
+}
+
+// MARK: - Widget Core
 
 extension Color {
     init(hex: String) {
@@ -42,27 +114,38 @@ struct SimpleEntry: TimelineEntry {
     let raceDate: String
     let results: [RaceEntryData]
     let trackMapData: Data?
+    let configuration: SelectRaceIntent
 }
 
-struct Provider: TimelineProvider {
+struct Provider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), raceName: "MONACO GRAND PRIX", circuitName: "Circuit de Monaco", raceDate: "2024-05-26", results: F1DataService.shared.getMockResults(), trackMapData: nil)
+        SimpleEntry(date: Date(), raceName: "MONACO GRAND PRIX", circuitName: "Circuit de Monaco", raceDate: "2024-05-26", results: F1DataService.shared.getMockResults(), trackMapData: nil, configuration: SelectRaceIntent())
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let entry = SimpleEntry(date: Date(), raceName: "MONACO GRAND PRIX", circuitName: "Circuit de Monaco", raceDate: "2024-05-26", results: F1DataService.shared.getMockResults(), trackMapData: nil)
-        completion(entry)
+    func snapshot(for configuration: SelectRaceIntent, in context: Context) async -> SimpleEntry {
+        SimpleEntry(date: Date(), raceName: "MONACO GRAND PRIX", circuitName: "Circuit de Monaco", raceDate: "2024-05-26", results: F1DataService.shared.getMockResults(), trackMapData: nil, configuration: configuration)
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<SimpleEntry>) -> ()) {
-        Task {
-            let (results, raceName, circuitName, raceDate, trackMapData) = (try? await F1DataService.shared.fetchLatestResults()) ?? (F1DataService.shared.getMockResults(), "LATEST RACE", "Circuit Name", "", nil)
-            let entry = SimpleEntry(date: Date(), raceName: raceName, circuitName: circuitName, raceDate: raceDate, results: results, trackMapData: trackMapData)
-            
-            let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date().addingTimeInterval(3600)
-            let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
-            completion(timeline)
+    func timeline(for configuration: SelectRaceIntent, in context: Context) async -> Timeline<SimpleEntry> {
+        let (results, raceName, circuitName, raceDate, trackMapData): ([RaceEntryData], String, String, String, Data?)
+        
+        if let race = configuration.race {
+            let idParts = race.id.components(separatedBy: "-")
+            if idParts.count == 2 {
+                let season = idParts[0]
+                let round = idParts[1]
+                (results, raceName, circuitName, raceDate, trackMapData) = (try? await F1DataService.shared.fetchResults(for: season, round: round)) ?? (F1DataService.shared.getMockResults(), "LATEST RACE", "Circuit Name", "", nil)
+            } else {
+                (results, raceName, circuitName, raceDate, trackMapData) = (try? await F1DataService.shared.fetchLatestResults()) ?? (F1DataService.shared.getMockResults(), "LATEST RACE", "Circuit Name", "", nil)
+            }
+        } else {
+            (results, raceName, circuitName, raceDate, trackMapData) = (try? await F1DataService.shared.fetchLatestResults()) ?? (F1DataService.shared.getMockResults(), "LATEST RACE", "Circuit Name", "", nil)
         }
+        
+        let entry = SimpleEntry(date: Date(), raceName: raceName, circuitName: circuitName, raceDate: raceDate, results: results, trackMapData: trackMapData, configuration: configuration)
+        
+        let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date().addingTimeInterval(3600)
+        return Timeline(entries: [entry], policy: .after(nextUpdate))
     }
 }
 
@@ -270,7 +353,7 @@ struct F1Widget: Widget {
     let kind: String = "F1RaceWidget"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: Provider()) { entry in
+        AppIntentConfiguration(kind: kind, intent: SelectRaceIntent.self, provider: Provider()) { entry in
             F1WidgetEntryView(entry: entry)
         }
         .configurationDisplayName("F1Race Widget")
@@ -282,7 +365,7 @@ struct F1Widget: Widget {
 struct F1Widget_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            F1WidgetEntryView(entry: SimpleEntry(date: Date(), raceName: "MONACO GRAND PRIX", circuitName: "Circuit de Monaco", raceDate: "2024-05-26", results: F1DataService.shared.getMockResults(), trackMapData: nil))
+            F1WidgetEntryView(entry: SimpleEntry(date: Date(), raceName: "MONACO GRAND PRIX", circuitName: "Circuit de Monaco", raceDate: "2024-05-26", results: F1DataService.shared.getMockResults(), trackMapData: nil, configuration: SelectRaceIntent()))
                 .previewContext(WidgetPreviewContext(family: .systemSmall))
         }
     }

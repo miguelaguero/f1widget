@@ -106,8 +106,17 @@ final class F1DataService: Sendable {
     ]
 
     func fetchLatestResults() async throws -> ([RaceEntryData], String, String, String, Data?) {
+        return try await fetchResults(url: resultsUrl)
+    }
+
+    func fetchResults(for season: String, round: String) async throws -> ([RaceEntryData], String, String, String, Data?) {
+        let url = URL(string: "https://api.jolpi.ca/ergast/f1/\(season)/\(round)/results.json")!
+        return try await fetchResults(url: url)
+    }
+
+    private func fetchResults(url: URL) async throws -> ([RaceEntryData], String, String, String, Data?) {
         do {
-            let (data, _) = try await URLSession.shared.data(from: resultsUrl)
+            let (data, _) = try await URLSession.shared.data(from: url)
             let raceResponse = try JSONDecoder().decode(RaceResponse.self, from: data)
 
             guard let latestRace = raceResponse.mrData.raceTable.races.first else {
@@ -159,6 +168,26 @@ final class F1DataService: Sendable {
         } catch {
             return (getMockResults(), "LATEST RACE", "Circuit Name", "", nil)
         }
+    }
+
+    func fetchAllRaces() async throws -> [Race] {
+        let url = URL(string: "https://api.jolpi.ca/ergast/f1/current.json")!
+        let (data, _) = try await URLSession.shared.data(from: url)
+        let response = try JSONDecoder().decode(RaceResponse.self, from: data)
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let now = Date()
+        
+        // Filter for races that have already happened
+        let pastRaces = response.mrData.raceTable.races.filter { race in
+            if let raceDate = dateFormatter.date(from: race.date) {
+                return raceDate <= now
+            }
+            return false
+        }
+        
+        return pastRaces.reversed() // Most recent first
     }
 
     private func fetchDriverPhotoData(for driverId: String) async -> Data? {
