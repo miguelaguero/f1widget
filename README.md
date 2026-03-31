@@ -9,21 +9,9 @@ A native macOS widget that displays the top 10 results from the most recent Form
 - Built with SwiftUI and WidgetKit.
 
 ## Screenshots
-
-### Widget Sizes (Light & Dark Mode)
-| Light Mode | Dark Mode |
-| :---: | :---: |
-| ![Light Mode Previews](Screenshots/widgets_light.png) | ![Dark Mode Previews](Screenshots/widgets_dark.png) |
-
-### Customization
-Select any race from the current season directly from the widget configuration.
-
+![Light Mode Previews](Screenshots/widgets_light.png)
+![Dark Mode Previews](Screenshots/widgets_dark.png)
 ![Select Race](Screenshots/edit_widget.png)
-
-### Desktop Integration
-The widgets look native and beautiful on your macOS desktop.
-
-![Desktop Preview](Screenshots/desktop_preview.png)
 
 ## Prerequisites
 - macOS 14.0 or later.
