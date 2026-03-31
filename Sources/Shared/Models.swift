@@ -96,6 +96,10 @@ struct RaceEntryData: Identifiable {
     let id = UUID()
     let position: Int
     let driverName: String
+    let driverId: String
     let constructorId: String
+    let constructorName: String
+    let constructorColor: String
     let logoData: Data?
+    let driverPhotoData: Data?
 }

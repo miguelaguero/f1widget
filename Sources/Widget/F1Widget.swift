@@ -8,6 +8,33 @@ import UIKit
 typealias PlatformImage = UIImage
 #endif
 
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: // RGB (24-bit)
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (1, 1, 1, 0)
+        }
+
+        self.init(
+            .sRGB,
+            red: Double(r) / 255,
+            green: Double(g) / 255,
+            blue: Double(b) / 255,
+            opacity: Double(a) / 255
+        )
+    }
+}
+
 struct SimpleEntry: TimelineEntry {
     let date: Date
     let raceName: String
@@ -23,7 +50,7 @@ struct Provider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let entry = placeholder(in: context)
+        let entry = SimpleEntry(date: Date(), raceName: "MONACO GRAND PRIX", circuitName: "Circuit de Monaco", raceDate: "2024-05-26", results: F1DataService.shared.getMockResults(), trackMapData: nil)
         completion(entry)
     }
 
@@ -46,59 +73,93 @@ struct F1WidgetEntryView : View {
 
     var body: some View {
         if family == .systemSmall {
-            VStack(alignment: .center, spacing: 2) {
-                Spacer(minLength: 0)
-                
-                Image(systemName: "trophy.fill")
-                    .foregroundColor(.yellow)
-                    .font(.system(size: 34))
-                
-                Spacer(minLength: 0)
-                
+            VStack(alignment: .center, spacing: 0) {
                 if let winner = entry.results.first {
-                    let names = winner.driverName.uppercased().components(separatedBy: " ")
-                    VStack(spacing: 0) {
-                        Text("WINNER")
-                            .font(.system(size: 10, weight: .bold, design: .monospaced))
-                            .foregroundColor(.secondary)
-                            .padding(.bottom, 2)
+                    if let photoData = winner.driverPhotoData, let platformImage = PlatformImage(data: photoData) {
+                        #if canImport(AppKit)
+                        Image(nsImage: platformImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 80)
+                            .padding(.top, 8)
+                        #elseif canImport(UIKit)
+                        Image(uiImage: platformImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 80)
+                            .padding(.top, 8)
+                        #endif
+                    } else {
+                        Image(systemName: "person.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(.white.opacity(0.8))
+                            .frame(height: 80)
+                            .padding(.top, 8)
+                    }
+                    
+                    Spacer(minLength: 0)
+                    
+                    VStack(spacing: 2) {
+                        HStack(spacing: 4) {
+                            if let logoData = winner.logoData, let platformImage = PlatformImage(data: logoData) {
+                                #if canImport(AppKit)
+                                Image(nsImage: platformImage)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 14, height: 14)
+                                #elseif canImport(UIKit)
+                                Image(uiImage: platformImage)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 14, height: 14)
+                                #endif
+                            }
+                            
+                            Text(winner.constructorName.uppercased())
+                                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                .foregroundColor(.white.opacity(0.9))
+                        }
                         
-                        VStack(spacing: -3) {
+                        let names = winner.driverName.uppercased().components(separatedBy: " ")
+                        VStack(spacing: -4) {
                             if names.count >= 2 {
                                 Text(names[0])
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.3)
                                 Text(names.dropFirst().joined(separator: " "))
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.3)
                             } else {
                                 Text(winner.driverName.uppercased())
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.3)
                             }
                         }
-                        .font(.system(size: 34, weight: .black, design: .rounded))
+                        .font(.system(size: 24, weight: .black, design: .rounded))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
                     }
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 4)
+                    .padding(.bottom, 8)
+                    
+                    Text(entry.circuitName.uppercased())
+                        .font(.system(size: 7, weight: .bold, design: .monospaced))
+                        .foregroundColor(.white.opacity(0.7))
+                        .padding(.bottom, 4)
                 } else {
                     Text("No data")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white)
                 }
-                
-                Spacer(minLength: 0)
-                
-                Text(entry.circuitName.uppercased())
-                    .font(.system(size: 8, weight: .bold, design: .monospaced))
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(1)
-                    .padding(.bottom, 4)
             }
-            .padding(8)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .containerBackground(Color.clear, for: .widget)
+            .containerBackground(for: .widget) {
+                if let winner = entry.results.first {
+                    ZStack {
+                        Color(hex: winner.constructorColor)
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.black.opacity(0.6), Color.clear]),
+                            startPoint: .bottom,
+                            endPoint: .top
+                        )
+                    }
+                } else {
+                    Color.gray
+                }
+            }
         } else {
             HStack(alignment: .center, spacing: 16) {
                 VStack(alignment: .leading, spacing: 6) {
@@ -220,21 +281,9 @@ struct F1Widget: Widget {
 
 struct F1Widget_Previews: PreviewProvider {
     static var previews: some View {
-        let dummyResults = F1DataService.shared.getMockResults()
-        let dummyEntry = SimpleEntry(date: Date(), raceName: "MONACO GRAND PRIX", circuitName: "Circuit de Monaco", raceDate: "2024-05-26", results: dummyResults, trackMapData: nil)
-        
         Group {
-            F1WidgetEntryView(entry: dummyEntry)
+            F1WidgetEntryView(entry: SimpleEntry(date: Date(), raceName: "MONACO GRAND PRIX", circuitName: "Circuit de Monaco", raceDate: "2024-05-26", results: F1DataService.shared.getMockResults(), trackMapData: nil))
                 .previewContext(WidgetPreviewContext(family: .systemSmall))
-            
-            F1WidgetEntryView(entry: dummyEntry)
-                .previewContext(WidgetPreviewContext(family: .systemMedium))
-            
-            F1WidgetEntryView(entry: dummyEntry)
-                .previewContext(WidgetPreviewContext(family: .systemLarge))
-                
-            F1WidgetEntryView(entry: dummyEntry)
-                .previewContext(WidgetPreviewContext(family: .systemExtraLarge))
         }
     }
 }
