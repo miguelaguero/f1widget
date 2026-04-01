@@ -128,196 +128,199 @@ struct F1WidgetEntryView : View {
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
-        if family == .systemSmall {
-            VStack(alignment: .center, spacing: 0) {
-                if let winner = entry.results.first {
-                    if let photoData = winner.driverPhotoData, let platformImage = PlatformImage(data: photoData) {
-                        #if canImport(AppKit)
-                        Image(nsImage: platformImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 80)
-                            .padding(.top, 8)
-                        #elseif canImport(UIKit)
-                        Image(uiImage: platformImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 80)
-                            .padding(.top, 8)
-                        #endif
-                    } else {
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 60))
-                            .foregroundColor(.white.opacity(0.8))
-                            .frame(height: 80)
-                            .padding(.top, 8)
-                    }
-                    
-                    Spacer(minLength: 0)
-                    
-                    VStack(spacing: 2) {
-                        HStack(spacing: 4) {
-                            if let logoData = winner.logoData, let platformImage = PlatformImage(data: logoData) {
-                                #if canImport(AppKit)
-                                Image(nsImage: platformImage)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 14, height: 14)
-                                    .colorInvert(colorScheme == .dark && (winner.constructorId.contains("mercedes") || winner.constructorId.contains("audi") || winner.constructorId.contains("cadillac") || winner.constructorId.contains("aston_martin")))
-                                #elseif canImport(UIKit)
-                                Image(uiImage: platformImage)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 14, height: 14)
-                                    .colorInvert(colorScheme == .dark && (winner.constructorId.contains("mercedes") || winner.constructorId.contains("audi") || winner.constructorId.contains("cadillac") || winner.constructorId.contains("aston_martin")))
-                                #endif
-                            }
-                            
-                            Text(winner.constructorName.uppercased())
-                                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                                .foregroundColor(.white.opacity(0.9))
+        Group {
+            if family == .systemSmall {
+                VStack(alignment: .center, spacing: 0) {
+                    if let winner = entry.results.first {
+                        if let photoData = winner.driverPhotoData, let platformImage = PlatformImage(data: photoData) {
+                            #if canImport(AppKit)
+                            Image(nsImage: platformImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 80)
+                                .padding(.top, 8)
+                            #elseif canImport(UIKit)
+                            Image(uiImage: platformImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 80)
+                                .padding(.top, 8)
+                            #endif
+                        } else {
+                            Image(systemName: "person.fill")
+                                .font(.system(size: 60))
+                                .foregroundColor(.white.opacity(0.8))
+                                .frame(height: 80)
+                                .padding(.top, 8)
                         }
                         
-                        let names = winner.driverName.uppercased().components(separatedBy: " ")
-                        VStack(spacing: -4) {
-                            if names.count >= 2 {
-                                Text(names[0])
-                                Text(names.dropFirst().joined(separator: " "))
-                            } else {
-                                Text(winner.driverName.uppercased())
+                        Spacer(minLength: 0)
+                        
+                        VStack(spacing: 2) {
+                            HStack(spacing: 4) {
+                                if let logoData = winner.logoData, let platformImage = PlatformImage(data: logoData) {
+                                    #if canImport(AppKit)
+                                    Image(nsImage: platformImage)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 14, height: 14)
+                                        .colorInvert(colorScheme == .dark && (winner.constructorId.contains("mercedes") || winner.constructorId.contains("audi") || winner.constructorId.contains("cadillac") || winner.constructorId.contains("aston_martin")))
+                                    #elseif canImport(UIKit)
+                                    Image(uiImage: platformImage)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 14, height: 14)
+                                        .colorInvert(colorScheme == .dark && (winner.constructorId.contains("mercedes") || winner.constructorId.contains("audi") || winner.constructorId.contains("cadillac") || winner.constructorId.contains("aston_martin")))
+                                    #endif
+                                }
+                                
+                                Text(winner.constructorName.uppercased())
+                                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                    .foregroundColor(.white.opacity(0.9))
                             }
+                            
+                            let names = winner.driverName.uppercased().components(separatedBy: " ")
+                            VStack(spacing: -4) {
+                                if names.count >= 2 {
+                                    Text(names[0])
+                                    Text(names.dropFirst().joined(separator: " "))
+                                } else {
+                                    Text(winner.driverName.uppercased())
+                                }
+                            }
+                            .font(.system(size: 24, weight: .black, design: .rounded))
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.5)
                         }
-                        .font(.system(size: 24, weight: .black, design: .rounded))
-                        .foregroundColor(.white)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.5)
+                        .padding(.bottom, 8)
+                        
+                        Text(entry.circuitName.uppercased())
+                            .font(.system(size: 7, weight: .bold, design: .monospaced))
+                            .foregroundColor(.white.opacity(0.7))
+                            .padding(.bottom, 4)
+                    } else {
+                        Text("No data")
+                            .foregroundColor(.white)
                     }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .containerBackground(for: .widget) {
+                    if let winner = entry.results.first {
+                        ZStack {
+                            Color(hex: winner.constructorColor)
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.black.opacity(0.6), Color.clear]),
+                                startPoint: .bottom,
+                                endPoint: .top
+                            )
+                        }
+                    } else {
+                        Color.gray
+                    }
+                }
+            } else {
+                VStack(spacing: 0) {
+                    // Centered Header for all larger widgets
+                    VStack(alignment: .center, spacing: 2) {
+                        Text(entry.raceName.uppercased())
+                            .font(.system(family == .systemSmall ? .title3 : .title2, design: .rounded))
+                            .fontWeight(.black)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                        
+                        Text(entry.circuitName.uppercased())
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+                    .padding(.top, 10)
                     .padding(.bottom, 8)
                     
-                    Text(entry.circuitName.uppercased())
-                        .font(.system(size: 7, weight: .bold, design: .monospaced))
-                        .foregroundColor(.white.opacity(0.7))
-                        .padding(.bottom, 4)
-                } else {
-                    Text("No data")
-                        .foregroundColor(.white)
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .containerBackground(for: .widget) {
-                if let winner = entry.results.first {
-                    ZStack {
-                        Color(hex: winner.constructorColor)
-                        LinearGradient(
-                            gradient: Gradient(colors: [Color.black.opacity(0.6), Color.clear]),
-                            startPoint: .bottom,
-                            endPoint: .top
-                        )
-                    }
-                } else {
-                    Color.gray
-                }
-            }
-        } else {
-            VStack(spacing: 0) {
-                // Centered Header for all larger widgets
-                VStack(alignment: .center, spacing: 2) {
-                    Text(entry.raceName.uppercased())
-                        .font(.system(family == .systemSmall ? .title3 : .title2, design: .rounded))
-                        .fontWeight(.black)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
-                    
-                    Text(entry.circuitName.uppercased())
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                }
-                .padding(.top, 10)
-                .padding(.bottom, 8)
-                
-                HStack(alignment: .top, spacing: 16) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        ForEach(Array(entry.results.prefix(maxItems))) { result in
-                            HStack(spacing: 8) {
-                                Text("\(result.position)")
-                                    .font(.system(.subheadline, design: .monospaced))
-                                    .fontWeight(.bold)
-                                    .frame(width: 22, alignment: .leading)
+                    HStack(alignment: .top, spacing: 16) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            ForEach(Array(entry.results.prefix(maxItems))) { result in
+                                HStack(spacing: 8) {
+                                    Text("\(result.position)")
+                                        .font(.system(.subheadline, design: .monospaced))
+                                        .fontWeight(.bold)
+                                        .frame(width: 22, alignment: .leading)
 
-                                ZStack {
-                                    if let logoData = result.logoData, let platformImage = PlatformImage(data: logoData) {
-                                        #if canImport(AppKit)
-                                        Image(nsImage: platformImage)
-                                            .resizable()
-                                            .scaledToFit()
-                                            .colorInvert(colorScheme == .dark && (result.constructorId.contains("mercedes") || result.constructorId.contains("audi") || result.constructorId.contains("cadillac") || result.constructorId.contains("aston_martin")))
-                                        #elseif canImport(UIKit)
-                                        Image(uiImage: platformImage)
-                                            .resizable()
-                                            .scaledToFit()
-                                            .colorInvert(colorScheme == .dark && (result.constructorId.contains("mercedes") || result.constructorId.contains("audi") || result.constructorId.contains("cadillac") || result.constructorId.contains("aston_martin")))
-                                        #endif
-                                    } else {
-                                        Image(systemName: "flag.checkered")
-                                            .resizable()
-                                            .scaledToFit()
+                                    ZStack {
+                                        if let logoData = result.logoData, let platformImage = PlatformImage(data: logoData) {
+                                            #if canImport(AppKit)
+                                            Image(nsImage: platformImage)
+                                                .resizable()
+                                                .scaledToFit()
+                                                .colorInvert(colorScheme == .dark && (result.constructorId.contains("mercedes") || result.constructorId.contains("audi") || result.constructorId.contains("cadillac") || result.constructorId.contains("aston_martin")))
+                                            #elseif canImport(UIKit)
+                                            Image(uiImage: platformImage)
+                                                .resizable()
+                                                .scaledToFit()
+                                                .colorInvert(colorScheme == .dark && (result.constructorId.contains("mercedes") || result.constructorId.contains("audi") || result.constructorId.contains("cadillac") || result.constructorId.contains("aston_martin")))
+                                            #endif
+                                        } else {
+                                            Image(systemName: "flag.checkered")
+                                                .resizable()
+                                                .scaledToFit()
+                                                .foregroundColor(.secondary)
+                                        }
+
+                                    }
+                                    .frame(width: 24, height: 24)
+
+                                    Text(result.driverName)
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                        .lineLimit(1)
+
+                                    Spacer()
+                                }
+                            }
+                            if entry.results.isEmpty {
+                                Text("No data available")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .frame(maxWidth: (family == .systemExtraLarge) ? 220 : .infinity, alignment: .leading)
+                        
+                        // Map only for Extra Large
+                        if family == .systemExtraLarge {
+                            VStack {
+                                if let trackMapData = entry.trackMapData, let platformImage = PlatformImage(data: trackMapData) {
+                                    #if canImport(AppKit)
+                                    Image(nsImage: platformImage)
+                                        .resizable()
+                                        .scaledToFit()
+                                    #elseif canImport(UIKit)
+                                    Image(uiImage: platformImage)
+                                        .resizable()
+                                        .scaledToFit()
+                                    #endif
+                                } else {
+                                    // Placeholder when map is missing
+                                    VStack(spacing: 8) {
+                                        Image(systemName: "map")
+                                            .font(.system(size: 40))
+                                            .foregroundColor(.secondary)
+                                        Text("Map not available")
+                                            .font(.caption2)
                                             .foregroundColor(.secondary)
                                     }
-
-                                }
-                                .frame(width: 24, height: 24)
-
-                                Text(result.driverName)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                    .lineLimit(1)
-
-                                Spacer()
-                            }
-                        }
-                        if entry.results.isEmpty {
-                            Text("No data available")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .frame(maxWidth: (family == .systemExtraLarge) ? 220 : .infinity, alignment: .leading)
-                    
-                    // Map only for Extra Large
-                    if family == .systemExtraLarge {
-                        VStack {
-                            if let trackMapData = entry.trackMapData, let platformImage = PlatformImage(data: trackMapData) {
-                                #if canImport(AppKit)
-                                Image(nsImage: platformImage)
-                                    .resizable()
-                                    .scaledToFit()
-                                #elseif canImport(UIKit)
-                                Image(uiImage: platformImage)
-                                    .resizable()
-                                    .scaledToFit()
-                                #endif
-                            } else {
-                                // Placeholder when map is missing
-                                VStack(spacing: 8) {
-                                    Image(systemName: "map")
-                                        .font(.system(size: 40))
-                                        .foregroundColor(.secondary)
-                                    Text("Map not available")
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
                                 }
                             }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                         }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 10)
                 }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 10)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .containerBackground(Color.clear, for: .widget)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .containerBackground(Color.clear, for: .widget)
         }
+        .widgetURL(URL(string: "https://f1cosmos.com"))
     }
 
     private var maxItems: Int {
@@ -397,14 +400,35 @@ struct StandingsWidgetEntryView : View {
                 .padding(.bottom, 8)
 
             HStack(alignment: .top, spacing: 40) {
-                standingsColumn(Array(entry.standings.prefix(11)))
-                standingsColumn(Array(entry.standings.dropFirst(11).prefix(11)))
+                VStack(alignment: .leading, spacing: 4) {
+                    standingsHeading()
+                    standingsColumn(Array(entry.standings.prefix(11)))
+                }
+                VStack(alignment: .leading, spacing: 4) {
+                    standingsHeading()
+                    standingsColumn(Array(entry.standings.dropFirst(11).prefix(11)))
+                }
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 12)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(Color.clear, for: .widget)
+        .widgetURL(URL(string: "https://f1cosmos.com"))
+    }
+
+    @ViewBuilder
+    private func standingsHeading() -> some View {
+        HStack(spacing: 6) {
+            Text("POS")
+                .frame(width: 22, alignment: .leading)
+            Text("DRIVER")
+            Spacer()
+            Text("PTS")
+        }
+        .font(.system(size: 8, weight: .bold, design: .monospaced))
+        .foregroundColor(.secondary)
+        .padding(.horizontal, 2)
     }
 
     @ViewBuilder
@@ -506,6 +530,17 @@ struct ConstructorStandingsWidgetEntryView : View {
                 .padding(.bottom, 8)
 
             VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 8) {
+                    Text("POS")
+                        .frame(width: 20, alignment: .leading)
+                    Text("CONSTRUCTOR")
+                    Spacer()
+                    Text("PTS")
+                }
+                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                .foregroundColor(.secondary)
+                .padding(.horizontal, 2)
+
                 ForEach(entry.standings.prefix(11)) { standing in
                     HStack(spacing: 8) {
                         Text("\(standing.position)")
@@ -551,6 +586,7 @@ struct ConstructorStandingsWidgetEntryView : View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(Color.clear, for: .widget)
+        .widgetURL(URL(string: "https://f1cosmos.com"))
     }
 }
 
