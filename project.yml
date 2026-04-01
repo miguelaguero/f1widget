@@ -1,4 +1,4 @@
-name: F1Race Widget
+name: F1 Widget
 options:
   bundleIdPrefix: com.f1widget
 targets:
@@ -16,9 +16,10 @@ targets:
         embed: true
     settings:
       GENERATE_INFOPLIST_FILE: YES
-      PRODUCT_NAME: F1Race Widget
+      PRODUCT_NAME: F1 Widget
       ASSETCATALOG_APPICON_NAME: AppIcon
-      INFOPLIST_KEY_CFBundleDisplayName: F1Race Widget
+      INFOPLIST_KEY_CFBundleDisplayName: F1 Widget
+      INFOPLIST_KEY_CFBundleName: F1 Widget
       PRODUCT_BUNDLE_IDENTIFIER: com.f1widget.app
       MARKETING_VERSION: "1.1"
       CURRENT_PROJECT_VERSION: "2"
@@ -38,9 +39,10 @@ targets:
     settings:
       GENERATE_INFOPLIST_FILE: NO
       INFOPLIST_FILE: Sources/Widget/Info.plist
-      PRODUCT_NAME: F1RaceWidgetExtension
+      PRODUCT_NAME: F1WidgetExtension
       ASSETCATALOG_APPICON_NAME: AppIcon
-      INFOPLIST_KEY_CFBundleDisplayName: F1Race Widget
+      INFOPLIST_KEY_CFBundleDisplayName: F1 Widget
+      INFOPLIST_KEY_CFBundleName: F1 Widget
       PRODUCT_BUNDLE_IDENTIFIER: com.f1widget.app.widget
       LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks"
       CODE_SIGN_IDENTITY: "-"

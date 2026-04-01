@@ -350,7 +350,7 @@ struct F1Widget: Widget {
         AppIntentConfiguration(kind: kind, intent: SelectRaceIntent.self, provider: Provider()) { entry in
             F1WidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("F1Race Widget")
+        .configurationDisplayName("F1 Widget")
         .description("Displays latest race results and track map.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .systemExtraLarge])
     }
@@ -396,7 +396,7 @@ struct StandingsWidgetEntryView : View {
                 .padding(.top, 12)
                 .padding(.bottom, 8)
 
-            HStack(alignment: .top, spacing: 20) {
+            HStack(alignment: .top, spacing: 40) {
                 standingsColumn(Array(entry.standings.prefix(11)))
                 standingsColumn(Array(entry.standings.dropFirst(11).prefix(11)))
             }
@@ -413,7 +413,7 @@ struct StandingsWidgetEntryView : View {
             ForEach(standings) { standing in
                 HStack(spacing: 6) {
                     Text("\(standing.position)")
-                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .font(.system(size: 12, weight: .bold, design: .monospaced))
                         .frame(width: 22, alignment: .leading)
                         .foregroundColor(.secondary)
 
@@ -439,13 +439,13 @@ struct StandingsWidgetEntryView : View {
                     .frame(width: 16, height: 16)
 
                     Text(standing.driverName)
-                        .font(.system(size: 15, weight: .bold))
+                        .font(.system(size: 13, weight: .bold, design: .monospaced))
                         .lineLimit(1)
                     
                     Spacer()
                     
                     Text(standing.points)
-                        .font(.system(size: 14, weight: .black, design: .monospaced))
+                        .font(.system(size: 12, weight: .black, design: .monospaced))
                         .foregroundColor(.secondary)
                 }
             }
@@ -509,7 +509,7 @@ struct ConstructorStandingsWidgetEntryView : View {
                 ForEach(entry.standings.prefix(11)) { standing in
                     HStack(spacing: 8) {
                         Text("\(standing.position)")
-                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
                             .frame(width: 20, alignment: .leading)
                             .foregroundColor(.secondary)
 
@@ -535,13 +535,13 @@ struct ConstructorStandingsWidgetEntryView : View {
                         .frame(width: 16, height: 16)
 
                         Text(standing.constructorName.uppercased())
-                            .font(.system(size: 13, weight: .bold, design: .rounded))
+                            .font(.system(size: 11, weight: .bold, design: .monospaced))
                             .lineLimit(1)
                         
                         Spacer()
                         
                         Text(standing.points)
-                            .font(.system(size: 12, weight: .black, design: .monospaced))
+                            .font(.system(size: 10, weight: .black, design: .monospaced))
                             .foregroundColor(.secondary)
                     }
                 }
