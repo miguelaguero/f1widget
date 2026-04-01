@@ -4,13 +4,14 @@ A native macOS widget that displays the top 10 results from the most recent Form
 
 ## Features
 - Fetches real-time data from the Jolpica-F1 API.
-- Displays driver position, manufacturer icon, and driver name.
+- Displays driver position, constructor icon, and driver name.
 - Supports Small, Medium, Large, and Extra Large widget sizes.
 - Built with SwiftUI and WidgetKit.
 
 ## Screenshots
 ![Light Mode Previews](Screenshots/widgets_light.png)
 ![Dark Mode Previews](Screenshots/widgets_dark.png)
+![Standings Widgets](Screenshots/standings.png)
 ![Select Race](Screenshots/edit_widget.png)
 
 ## Prerequisites
@@ -47,7 +48,7 @@ A native macOS widget that displays the top 10 results from the most recent Form
 
 ## Data Sources
 - **Race Data:** [Jolpica-F1 API](https://jolpi.ca/)
-- **Manufacturer Logos:** From official Website.
+- **Constructor Logos:** From official Website.
 - **Additional Info:** [subinium/awesome-f1](https://github.com/subinium/awesome-f1)
 
 ## License

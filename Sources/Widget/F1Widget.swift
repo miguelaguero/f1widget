@@ -80,33 +80,6 @@ struct SelectRaceIntent: WidgetConfigurationIntent {
 
 // MARK: - Widget Core
 
-extension Color {
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let a, r, g, b: UInt64
-        switch hex.count {
-        case 3: // RGB (12-bit)
-            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6: // RGB (24-bit)
-            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8: // ARGB (32-bit)
-            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-        default:
-            (a, r, g, b) = (1, 1, 1, 0)
-        }
-
-        self.init(
-            .sRGB,
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue: Double(b) / 255,
-            opacity: Double(a) / 255
-        )
-    }
-}
-
 struct SimpleEntry: TimelineEntry {
     let date: Date
     let raceName: String
@@ -190,11 +163,13 @@ struct F1WidgetEntryView : View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 14, height: 14)
+                                    .colorInvert(colorScheme == .dark && (winner.constructorId.contains("mercedes") || winner.constructorId.contains("audi") || winner.constructorId.contains("cadillac") || winner.constructorId.contains("aston_martin")))
                                 #elseif canImport(UIKit)
                                 Image(uiImage: platformImage)
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 14, height: 14)
+                                    .colorInvert(colorScheme == .dark && (winner.constructorId.contains("mercedes") || winner.constructorId.contains("audi") || winner.constructorId.contains("cadillac") || winner.constructorId.contains("aston_martin")))
                                 #endif
                             }
                             
@@ -276,10 +251,12 @@ struct F1WidgetEntryView : View {
                                         Image(nsImage: platformImage)
                                             .resizable()
                                             .scaledToFit()
+                                            .colorInvert(colorScheme == .dark && (result.constructorId.contains("mercedes") || result.constructorId.contains("audi") || result.constructorId.contains("cadillac") || result.constructorId.contains("aston_martin")))
                                         #elseif canImport(UIKit)
                                         Image(uiImage: platformImage)
                                             .resizable()
                                             .scaledToFit()
+                                            .colorInvert(colorScheme == .dark && (result.constructorId.contains("mercedes") || result.constructorId.contains("audi") || result.constructorId.contains("cadillac") || result.constructorId.contains("aston_martin")))
                                         #endif
                                     } else {
                                         Image(systemName: "flag.checkered")
@@ -355,9 +332,17 @@ struct F1WidgetEntryView : View {
     }
 }
 
-#if !IS_APP
-@main
-#endif
+extension View {
+    @ViewBuilder
+    func colorInvert(_ shouldInvert: Bool) -> some View {
+        if shouldInvert {
+            self.colorInvert()
+        } else {
+            self
+        }
+    }
+}
+
 struct F1Widget: Widget {
     let kind: String = "F1RaceWidget"
 
@@ -371,11 +356,240 @@ struct F1Widget: Widget {
     }
 }
 
+// MARK: - Standings Widget
+
+struct StandingsEntry: TimelineEntry {
+    let date: Date
+    let standings: [DriverStandingData]
+}
+
+struct StandingsProvider: TimelineProvider {
+    func placeholder(in context: Context) -> StandingsEntry {
+        StandingsEntry(date: Date(), standings: F1DataService.shared.getMockStandings())
+    }
+
+    func getSnapshot(in context: Context, completion: @escaping (StandingsEntry) -> ()) {
+        let entry = StandingsEntry(date: Date(), standings: F1DataService.shared.getMockStandings())
+        completion(entry)
+    }
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<StandingsEntry>) -> ()) {
+        Task {
+            let standings = (try? await F1DataService.shared.fetchDriverStandings()) ?? F1DataService.shared.getMockStandings()
+            let entry = StandingsEntry(date: Date(), standings: standings)
+            let nextUpdate = Calendar.current.date(byAdding: .hour, value: 6, to: Date()) ?? Date().addingTimeInterval(3600 * 6)
+            let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
+            completion(timeline)
+        }
+    }
+}
+
+struct StandingsWidgetEntryView : View {
+    var entry: StandingsProvider.Entry
+    @Environment(\.widgetFamily) var family
+    @Environment(\.colorScheme) var colorScheme
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Text("DRIVER STANDINGS")
+                .font(.system(size: 18, weight: .black, design: .rounded))
+                .padding(.top, 12)
+                .padding(.bottom, 8)
+
+            HStack(alignment: .top, spacing: 20) {
+                standingsColumn(Array(entry.standings.prefix(11)))
+                standingsColumn(Array(entry.standings.dropFirst(11).prefix(11)))
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 12)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .containerBackground(Color.clear, for: .widget)
+    }
+
+    @ViewBuilder
+    private func standingsColumn(_ standings: [DriverStandingData]) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(standings) { standing in
+                HStack(spacing: 6) {
+                    Text("\(standing.position)")
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .frame(width: 22, alignment: .leading)
+                        .foregroundColor(.secondary)
+
+                    ZStack {
+                        if let logoData = standing.logoData, let platformImage = PlatformImage(data: logoData) {
+                            #if canImport(AppKit)
+                            Image(nsImage: platformImage)
+                                .resizable()
+                                .scaledToFit()
+                                .colorInvert(colorScheme == .dark && (standing.constructorId.contains("mercedes") || standing.constructorId.contains("audi") || standing.constructorId.contains("cadillac") || standing.constructorId.contains("aston_martin")))
+                            #elseif canImport(UIKit)
+                            Image(uiImage: platformImage)
+                                .resizable()
+                                .scaledToFit()
+                                .colorInvert(colorScheme == .dark && (standing.constructorId.contains("mercedes") || standing.constructorId.contains("audi") || standing.constructorId.contains("cadillac") || standing.constructorId.contains("aston_martin")))
+                            #endif
+                        } else {
+                            Circle()
+                                .fill(Color(hex: standing.constructorColor))
+                                .frame(width: 5, height: 5)
+                        }
+                    }
+                    .frame(width: 16, height: 16)
+
+                    Text(standing.driverName)
+                        .font(.system(size: 15, weight: .bold))
+                        .lineLimit(1)
+                    
+                    Spacer()
+                    
+                    Text(standing.points)
+                        .font(.system(size: 14, weight: .black, design: .monospaced))
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+    }
+}
+
+struct StandingsWidget: Widget {
+    let kind: String = "F1StandingsWidget"
+
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: StandingsProvider()) { entry in
+            StandingsWidgetEntryView(entry: entry)
+        }
+        .configurationDisplayName("F1 Driver Standings")
+        .description("Current Formula 1 driver standings.")
+        .supportedFamilies([.systemExtraLarge])
+    }
+}
+
+// MARK: - Constructor Standings Widget
+
+struct ConstructorStandingsEntry: TimelineEntry {
+    let date: Date
+    let standings: [ConstructorStandingData]
+}
+
+struct ConstructorStandingsProvider: TimelineProvider {
+    func placeholder(in context: Context) -> ConstructorStandingsEntry {
+        ConstructorStandingsEntry(date: Date(), standings: F1DataService.shared.getMockConstructorStandings())
+    }
+
+    func getSnapshot(in context: Context, completion: @escaping (ConstructorStandingsEntry) -> ()) {
+        let entry = ConstructorStandingsEntry(date: Date(), standings: F1DataService.shared.getMockConstructorStandings())
+        completion(entry)
+    }
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<ConstructorStandingsEntry>) -> ()) {
+        Task {
+            let standings = (try? await F1DataService.shared.fetchConstructorStandings()) ?? F1DataService.shared.getMockConstructorStandings()
+            let entry = ConstructorStandingsEntry(date: Date(), standings: standings)
+            let nextUpdate = Calendar.current.date(byAdding: .hour, value: 6, to: Date()) ?? Date().addingTimeInterval(3600 * 6)
+            let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
+            completion(timeline)
+        }
+    }
+}
+
+struct ConstructorStandingsWidgetEntryView : View {
+    var entry: ConstructorStandingsProvider.Entry
+    @Environment(\.colorScheme) var colorScheme
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Text("CONSTRUCTOR STANDINGS")
+                .font(.system(size: 16, weight: .black, design: .rounded))
+                .padding(.top, 12)
+                .padding(.bottom, 8)
+
+            VStack(alignment: .leading, spacing: 4) {
+                ForEach(entry.standings.prefix(11)) { standing in
+                    HStack(spacing: 8) {
+                        Text("\(standing.position)")
+                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                            .frame(width: 20, alignment: .leading)
+                            .foregroundColor(.secondary)
+
+                        ZStack {
+                            if let logoData = standing.logoData, let platformImage = PlatformImage(data: logoData) {
+                                #if canImport(AppKit)
+                                Image(nsImage: platformImage)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .colorInvert(colorScheme == .dark && (standing.constructorId.contains("mercedes") || standing.constructorId.contains("audi") || standing.constructorId.contains("cadillac") || standing.constructorId.contains("aston_martin")))
+                                #elseif canImport(UIKit)
+                                Image(uiImage: platformImage)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .colorInvert(colorScheme == .dark && (standing.constructorId.contains("mercedes") || standing.constructorId.contains("audi") || standing.constructorId.contains("cadillac") || standing.constructorId.contains("aston_martin")))
+                                #endif
+                            } else {
+                                Circle()
+                                    .fill(Color(hex: standing.constructorColor))
+                                    .frame(width: 5, height: 5)
+                            }
+                        }
+                        .frame(width: 16, height: 16)
+
+                        Text(standing.constructorName.uppercased())
+                            .font(.system(size: 13, weight: .bold, design: .rounded))
+                            .lineLimit(1)
+                        
+                        Spacer()
+                        
+                        Text(standing.points)
+                            .font(.system(size: 12, weight: .black, design: .monospaced))
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 12)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .containerBackground(Color.clear, for: .widget)
+    }
+}
+
+struct ConstructorStandingsWidget: Widget {
+    let kind: String = "F1ConstructorStandingsWidget"
+
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: ConstructorStandingsProvider()) { entry in
+            ConstructorStandingsWidgetEntryView(entry: entry)
+        }
+        .configurationDisplayName("F1 Constructor Standings")
+        .description("Current Formula 1 constructor standings.")
+        .supportedFamilies([.systemLarge])
+    }
+}
+
+// MARK: - Widget Bundle
+
+#if !IS_APP
+@main
+#endif
+struct F1Widgets: WidgetBundle {
+    var body: some Widget {
+        F1Widget()
+        StandingsWidget()
+        ConstructorStandingsWidget()
+    }
+}
+
+// MARK: - Previews
+
 struct F1Widget_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             F1WidgetEntryView(entry: SimpleEntry(date: Date(), raceName: "MONACO GRAND PRIX", circuitName: "Circuit de Monaco", raceDate: "2024-05-26", results: F1DataService.shared.getMockResults(), trackMapData: nil, configuration: SelectRaceIntent()))
                 .previewContext(WidgetPreviewContext(family: .systemSmall))
+            
+            StandingsWidgetEntryView(entry: StandingsEntry(date: Date(), standings: F1DataService.shared.getMockStandings()))
+                .previewContext(WidgetPreviewContext(family: .systemExtraLarge))
         }
     }
 }

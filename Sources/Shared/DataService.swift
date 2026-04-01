@@ -105,6 +105,9 @@ final class F1DataService: Sendable {
         "yas_marina": "Abu_Dhabi_Circuit.png"
     ]
 
+    private let standingsUrl = URL(string: "https://api.jolpi.ca/ergast/f1/current/driverStandings.json")!
+    private let constructorStandingsUrl = URL(string: "https://api.jolpi.ca/ergast/f1/current/constructorStandings.json")!
+
     func fetchLatestResults() async throws -> ([RaceEntryData], String, String, String, Data?) {
         return try await fetchResults(url: resultsUrl)
     }
@@ -112,6 +115,99 @@ final class F1DataService: Sendable {
     func fetchResults(for season: String, round: String) async throws -> ([RaceEntryData], String, String, String, Data?) {
         let url = URL(string: "https://api.jolpi.ca/ergast/f1/\(season)/\(round)/results.json")!
         return try await fetchResults(url: url)
+    }
+
+    func fetchDriverStandings() async throws -> [DriverStandingData] {
+        do {
+            let (data, _) = try await URLSession.shared.data(from: standingsUrl)
+            let response = try JSONDecoder().decode(StandingsResponse.self, from: data)
+
+            guard let standingsList = response.mrData.standingsTable.standingsLists.first else {
+                return getMockStandings()
+            }
+
+            return await withTaskGroup(of: (Int, DriverStandingData).self) { group in
+                for (index, standing) in standingsList.driverStandings.enumerated() {
+                    let driver = standing.driver
+                    let constructor = standing.constructors.first
+                    let constructorId = constructor?.constructorId ?? "unknown"
+                    let constructorName = constructor?.name ?? "Unknown"
+                    let points = standing.points
+                    let position = Int(standing.position) ?? 0
+
+                    group.addTask {
+                        let logoData = await self.fetchLogoData(for: constructorId)
+                        let constructorColor = self.constructorColorMap[constructorId] ?? "#888888"
+                        
+                        let data = DriverStandingData(
+                            position: position,
+                            driverName: driver.fullName,
+                            driverId: driver.driverId,
+                            constructorId: constructorId,
+                            constructorName: constructorName,
+                            constructorColor: constructorColor,
+                            points: points,
+                            logoData: logoData
+                        )
+                        return (index, data)
+                    }
+                }
+                
+                var results: [(Int, DriverStandingData)] = []
+                for await entry in group {
+                    results.append(entry)
+                }
+                return results.sorted { $0.0 < $1.0 }.map { $0.1 }
+            }
+        } catch {
+            print("Error fetching standings: \(error)")
+            return getMockStandings()
+        }
+    }
+
+    func fetchConstructorStandings() async throws -> [ConstructorStandingData] {
+        do {
+            let (data, _) = try await URLSession.shared.data(from: constructorStandingsUrl)
+            let response = try JSONDecoder().decode(ConstructorStandingsResponse.self, from: data)
+
+            guard let list = response.mrData.standingsTable.standingsLists.first else {
+                return getMockConstructorStandings()
+            }
+
+            return await withTaskGroup(of: (Int, ConstructorStandingData).self) { group in
+                for (index, standing) in list.constructorStandings.enumerated() {
+                    let constructor = standing.constructor
+                    let constructorId = constructor.constructorId
+                    let constructorName = constructor.name
+                    let points = standing.points
+                    let position = Int(standing.position) ?? 0
+
+                    group.addTask {
+                        let logoData = await self.fetchLogoData(for: constructorId)
+                        let constructorColor = self.constructorColorMap[constructorId] ?? "#888888"
+                        
+                        let data = ConstructorStandingData(
+                            position: position,
+                            constructorId: constructorId,
+                            constructorName: constructorName,
+                            constructorColor: constructorColor,
+                            points: points,
+                            logoData: logoData
+                        )
+                        return (index, data)
+                    }
+                }
+                
+                var results: [(Int, ConstructorStandingData)] = []
+                for await entry in group {
+                    results.append(entry)
+                }
+                return results.sorted { $0.0 < $1.0 }.map { $0.1 }
+            }
+        } catch {
+            print("Error fetching constructor standings: \(error)")
+            return getMockConstructorStandings()
+        }
     }
 
     private func fetchResults(url: URL) async throws -> ([RaceEntryData], String, String, String, Data?) {
@@ -259,6 +355,73 @@ final class F1DataService: Sendable {
                 constructorColor: constructorColorMap[info.2] ?? "#888888",
                 logoData: nil,
                 driverPhotoData: nil
+            )
+        }
+    }
+    
+    func getMockStandings() -> [DriverStandingData] {
+        let mockDrivers = [
+            ("Max Verstappen", "verstappen", "red_bull", "Red Bull Racing", "450"),
+            ("Lando Norris", "norris", "mclaren", "McLaren", "320"),
+            ("Charles Leclerc", "leclerc", "ferrari", "Ferrari", "310"),
+            ("Oscar Piastri", "piastri", "mclaren", "McLaren", "280"),
+            ("Carlos Sainz", "sainz", "ferrari", "Ferrari", "260"),
+            ("Lewis Hamilton", "hamilton", "mercedes", "Mercedes-AMG", "200"),
+            ("George Russell", "russell", "mercedes", "Mercedes-AMG", "195"),
+            ("Sergio Perez", "perez", "red_bull", "Red Bull Racing", "150"),
+            ("Fernando Alonso", "alonso", "aston_martin", "Aston Martin", "62"),
+            ("Nico Hulkenberg", "hulkenberg", "haas", "Haas F1 Team", "31"),
+            ("Yuki Tsunoda", "tsunoda", "rb", "Racing Bulls", "22"),
+            ("Lance Stroll", "stroll", "aston_martin", "Aston Martin", "24"),
+            ("Alexander Albon", "albon", "williams", "Williams", "12"),
+            ("Daniel Ricciardo", "ricciardo", "rb", "Racing Bulls", "12"),
+            ("Pierre Gasly", "gasly", "alpine", "Alpine", "10"),
+            ("Esteban Ocon", "ocon", "alpine", "Alpine", "5"),
+            ("Kevin Magnussen", "magnussen", "haas", "Haas F1 Team", "14"),
+            ("Valtteri Bottas", "bottas", "sauber", "Sauber", "0"),
+            ("Zhou Guanyu", "zhou", "sauber", "Sauber", "0"),
+            ("Logan Sargeant", "sargeant", "williams", "Williams", "0"),
+            ("Oliver Bearman", "bearman", "ferrari", "Ferrari", "6"),
+            ("Liam Lawson", "lawson", "rb", "Racing Bulls", "4")
+        ]
+        
+        return mockDrivers.enumerated().map { index, info in
+            DriverStandingData(
+                position: index + 1,
+                driverName: info.0,
+                driverId: info.1,
+                constructorId: info.2,
+                constructorName: info.3,
+                constructorColor: constructorColorMap[info.2] ?? "#888888",
+                points: info.4,
+                logoData: nil
+            )
+        }
+    }
+
+    func getMockConstructorStandings() -> [ConstructorStandingData] {
+        let mockConstructors = [
+            ("Red Bull Racing", "red_bull", "500"),
+            ("McLaren", "mclaren", "480"),
+            ("Ferrari", "ferrari", "460"),
+            ("Mercedes-AMG", "mercedes", "380"),
+            ("Aston Martin", "aston_martin", "90"),
+            ("Haas F1 Team", "haas", "45"),
+            ("Racing Bulls", "rb", "35"),
+            ("Williams", "williams", "20"),
+            ("Alpine", "alpine", "15"),
+            ("Sauber", "sauber", "0"),
+            ("Cadillac", "cadillac", "0")
+        ]
+        
+        return mockConstructors.enumerated().map { index, info in
+            ConstructorStandingData(
+                position: index + 1,
+                constructorId: info.1,
+                constructorName: info.0,
+                constructorColor: constructorColorMap[info.1] ?? "#888888",
+                points: info.2,
+                logoData: nil
             )
         }
     }
