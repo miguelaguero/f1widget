@@ -1,6 +1,9 @@
-# Formula 1 Race Results Widget for macOS
+<p align="center"><img src="Screenshots/app_icon.png" width="128" height="128" style="border-radius: 20%;"></p>
 
-A native macOS widget that displays the top 10 results from the most recent Formula 1 race.
+<h1 align="center">F1 Widget</h1>
+
+A native macOS widget that displays real-time Formula 1 results and standings.
+
 
 ## Features
 - Fetches real-time data from the Jolpica-F1 API.
