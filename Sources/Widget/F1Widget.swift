@@ -743,9 +743,76 @@ struct UpcomingRaceWidget: Widget {
         StaticConfiguration(kind: kind, provider: UpcomingRaceProvider()) { entry in
             UpcomingRaceWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("Upcoming Race")
-        .description("Displays information about the next F1 race.")
+        .configurationDisplayName("Upcoming Race (XL)")
+        .description("Displays information about the next F1 race with a track map.")
         .supportedFamilies([.systemExtraLarge])
+    }
+}
+
+// MARK: - Upcoming Race Small Widget
+
+struct UpcomingRaceSmallWidgetEntryView : View {
+    var entry: UpcomingRaceProvider.Entry
+
+    var body: some View {
+        if let race = entry.race {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("UPCOMING")
+                    .font(.system(size: 8, weight: .bold, design: .monospaced))
+                    .foregroundColor(.red)
+                
+                Text(race.raceName.uppercased())
+                    .font(.system(size: 16, weight: .black, design: .rounded))
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.8)
+                
+                Spacer(minLength: 0)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(race.circuit.location.locality), \(race.circuit.location.country)")
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                    
+                    Text(formatRaceDate(race.date))
+                        .font(.system(size: 10, weight: .black, design: .monospaced))
+                        .foregroundColor(.primary)
+                }
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .containerBackground(Color.clear, for: .widget)
+        } else {
+            VStack {
+                Text("No upcoming race data")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .containerBackground(Color.clear, for: .widget)
+        }
+    }
+
+    private func formatRaceDate(_ dateString: String) -> String {
+        let inputFormatter = DateFormatter()
+        inputFormatter.dateFormat = "yyyy-MM-dd"
+        guard let date = inputFormatter.date(from: dateString) else { return dateString }
+        
+        let outputFormatter = DateFormatter()
+        outputFormatter.dateFormat = "MMM d, yyyy"
+        return outputFormatter.string(from: date).uppercased()
+    }
+}
+
+struct UpcomingRaceSmallWidget: Widget {
+    let kind: String = "F1UpcomingRaceSmallWidget"
+
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: UpcomingRaceProvider()) { entry in
+            UpcomingRaceSmallWidgetEntryView(entry: entry)
+        }
+        .configurationDisplayName("Upcoming Race (Small)")
+        .description("A compact view of the next Grand Prix.")
+        .supportedFamilies([.systemSmall])
     }
 }
 
@@ -756,6 +823,7 @@ struct UpcomingRaceWidget: Widget {
 #endif
 struct F1Widgets: WidgetBundle {
     var body: some Widget {
+        UpcomingRaceSmallWidget()
         UpcomingRaceWidget()
         F1Widget()
         StandingsWidget()
@@ -768,6 +836,10 @@ struct F1Widgets: WidgetBundle {
 struct F1Widget_Previews: PreviewProvider {
     static var previews: some View {
         Group {
+            UpcomingRaceSmallWidgetEntryView(entry: UpcomingRaceEntry(date: Date(), race: F1DataService.shared.getMockNextRace(), trackMapData: nil))
+                .previewContext(WidgetPreviewContext(family: .systemSmall))
+                .previewDisplayName("Upcoming Race Small")
+
             UpcomingRaceWidgetEntryView(entry: UpcomingRaceEntry(date: Date(), race: F1DataService.shared.getMockNextRace(), trackMapData: nil))
                 .previewContext(WidgetPreviewContext(family: .systemExtraLarge))
                 .previewDisplayName("Upcoming Race Extra Large")
