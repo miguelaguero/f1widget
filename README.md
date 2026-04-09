@@ -11,6 +11,23 @@ A native macOS widget that displays real-time Formula 1 results and standings.
 - Supports Small, Medium, Large, and Extra Large widget sizes.
 - Built with SwiftUI and WidgetKit.
 
+## Available Widgets
+
+### 🏁 Race Results
+Displays the latest Grand Prix results including the winner's photo (small size), team logos, and the top 10/12 finishers.
+- **Sizes:** Small, Medium, Large, Extra Large.
+- **Customization:** Long-press the widget to select results from any race in the current season.
+
+### 🏆 Standings
+Keep track of the championship battle throughout the season.
+- **Driver Standings:** Comprehensive list of all drivers, their positions, teams, and total points. (Extra Large only)
+- **Constructor Standings:** Current team rankings with points and official logos. (Large only)
+
+### 🗺️ Upcoming Race (New!)
+The ultimate countdown to the next Grand Prix.
+- **Sizes:** Extra Large.
+- **Features:** Displays race date, location, a live day countdown, and a predominant high-quality track map.
+
 ## Screenshots
 ![Light Mode Previews](Screenshots/widgets_light.png)
 ![Dark Mode Previews](Screenshots/widgets_dark.png)
