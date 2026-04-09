@@ -603,6 +603,152 @@ struct ConstructorStandingsWidget: Widget {
     }
 }
 
+// MARK: - Upcoming Race Widget
+
+struct UpcomingRaceEntry: TimelineEntry {
+    let date: Date
+    let race: Race?
+    let trackMapData: Data?
+}
+
+struct UpcomingRaceProvider: TimelineProvider {
+    func placeholder(in context: Context) -> UpcomingRaceEntry {
+        UpcomingRaceEntry(date: Date(), race: F1DataService.shared.getMockNextRace(), trackMapData: nil)
+    }
+
+    func getSnapshot(in context: Context, completion: @escaping (UpcomingRaceEntry) -> ()) {
+        let entry = UpcomingRaceEntry(date: Date(), race: F1DataService.shared.getMockNextRace(), trackMapData: nil)
+        completion(entry)
+    }
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<UpcomingRaceEntry>) -> ()) {
+        Task {
+            let (race, trackMapData) = (try? await F1DataService.shared.fetchNextRace()) ?? (F1DataService.shared.getMockNextRace(), nil)
+            let entry = UpcomingRaceEntry(date: Date(), race: race, trackMapData: trackMapData)
+            
+            // Update every 12 hours
+            let nextUpdate = Calendar.current.date(byAdding: .hour, value: 12, to: Date()) ?? Date().addingTimeInterval(3600 * 12)
+            let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
+            completion(timeline)
+        }
+    }
+}
+
+struct UpcomingRaceWidgetEntryView : View {
+    var entry: UpcomingRaceProvider.Entry
+    @Environment(\.widgetFamily) var family
+
+    var body: some View {
+        if let race = entry.race {
+            VStack(spacing: 0) {
+                // Top Header Row
+                HStack(alignment: .top) {
+                    // Left: Race Name and Location
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("UPCOMING")
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .foregroundColor(.red)
+                        
+                        Text(race.raceName.uppercased())
+                            .font(.system(size: 20, weight: .black, design: .rounded))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                        
+                        Text("\(race.circuit.location.locality), \(race.circuit.location.country)")
+                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+                    
+                    Spacer()
+                    
+                    // Right: Date and Countdown
+                    VStack(alignment: .trailing, spacing: 0) {
+                        Text(formatRaceDate(race.date))
+                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                            .foregroundColor(.secondary)
+                        
+                        if let days = daysUntil(race.date) {
+                            Text("\(days) DAYS")
+                                .font(.system(size: 28, weight: .black, design: .rounded))
+                                .foregroundColor(.primary)
+                        }
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 20)
+                
+                Spacer(minLength: 12)
+                
+                // Bottom: Centered Track Map
+                if let trackMapData = entry.trackMapData, let platformImage = PlatformImage(data: trackMapData) {
+                    VStack {
+                        #if canImport(AppKit)
+                        Image(nsImage: platformImage)
+                            .resizable()
+                            .scaledToFit()
+                        #elseif canImport(UIKit)
+                        Image(uiImage: platformImage)
+                            .resizable()
+                            .scaledToFit()
+                        #endif
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 24)
+                } else {
+                    Spacer()
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .containerBackground(Color.clear, for: .widget)
+        } else {
+            VStack {
+                Text("No upcoming race data")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .containerBackground(Color.clear, for: .widget)
+        }
+    }
+
+    private func formatRaceDate(_ dateString: String) -> String {
+        let inputFormatter = DateFormatter()
+        inputFormatter.dateFormat = "yyyy-MM-dd"
+        guard let date = inputFormatter.date(from: dateString) else { return dateString }
+        
+        let outputFormatter = DateFormatter()
+        outputFormatter.dateFormat = "MMM d, yyyy"
+        return outputFormatter.string(from: date).uppercased()
+    }
+
+    private func daysUntil(_ dateString: String) -> Int? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        guard let raceDate = dateFormatter.date(from: dateString) else { return nil }
+        
+        let calendar = Calendar.current
+        let startOfNow = calendar.startOfDay(for: Date())
+        let startOfRace = calendar.startOfDay(for: raceDate)
+        
+        let components = calendar.dateComponents([.day], from: startOfNow, to: startOfRace)
+        return components.day
+    }
+}
+
+struct UpcomingRaceWidget: Widget {
+    let kind: String = "F1UpcomingRaceWidget"
+
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: UpcomingRaceProvider()) { entry in
+            UpcomingRaceWidgetEntryView(entry: entry)
+        }
+        .configurationDisplayName("Upcoming Race")
+        .description("Displays information about the next F1 race.")
+        .supportedFamilies([.systemExtraLarge])
+    }
+}
+
 // MARK: - Widget Bundle
 
 #if !IS_APP
@@ -610,6 +756,7 @@ struct ConstructorStandingsWidget: Widget {
 #endif
 struct F1Widgets: WidgetBundle {
     var body: some Widget {
+        UpcomingRaceWidget()
         F1Widget()
         StandingsWidget()
         ConstructorStandingsWidget()
@@ -621,6 +768,10 @@ struct F1Widgets: WidgetBundle {
 struct F1Widget_Previews: PreviewProvider {
     static var previews: some View {
         Group {
+            UpcomingRaceWidgetEntryView(entry: UpcomingRaceEntry(date: Date(), race: F1DataService.shared.getMockNextRace(), trackMapData: nil))
+                .previewContext(WidgetPreviewContext(family: .systemExtraLarge))
+                .previewDisplayName("Upcoming Race Extra Large")
+
             F1WidgetEntryView(entry: SimpleEntry(date: Date(), raceName: "MONACO GRAND PRIX", circuitName: "Circuit de Monaco", raceDate: "2024-05-26", results: F1DataService.shared.getMockResults(), trackMapData: nil, configuration: SelectRaceIntent()))
                 .previewContext(WidgetPreviewContext(family: .systemSmall))
             

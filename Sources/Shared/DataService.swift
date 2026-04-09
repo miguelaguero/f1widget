@@ -266,6 +266,30 @@ final class F1DataService: Sendable {
         }
     }
 
+    func fetchNextRace() async throws -> (Race?, Data?) {
+        let url = URL(string: "https://api.jolpi.ca/ergast/f1/current.json")!
+        let (data, _) = try await URLSession.shared.data(from: url)
+        let response = try JSONDecoder().decode(RaceResponse.self, from: data)
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let now = Date()
+        
+        let nextRace = response.mrData.raceTable.races.first { race in
+            if let raceDate = dateFormatter.date(from: race.date) {
+                return raceDate >= now
+            }
+            return false
+        }
+        
+        var trackMapData: Data? = nil
+        if let circuitId = nextRace?.circuit.circuitId {
+            trackMapData = await fetchTrackMapData(for: circuitId)
+        }
+        
+        return (nextRace, trackMapData)
+    }
+
     func fetchAllRaces() async throws -> [Race] {
         let url = URL(string: "https://api.jolpi.ca/ergast/f1/current.json")!
         let (data, _) = try await URLSession.shared.data(from: url)
@@ -338,6 +362,26 @@ final class F1DataService: Sendable {
         }
     }
     
+    func getMockNextRace() -> Race {
+        return Race(
+            season: "2026",
+            round: "1",
+            raceName: "Australian Grand Prix",
+            date: "2026-03-15",
+            circuit: Circuit(
+                circuitId: "albert_park",
+                circuitName: "Albert Park Circuit",
+                location: Location(
+                    lat: "-37.8497",
+                    long: "144.968",
+                    locality: "Melbourne",
+                    country: "Australia"
+                )
+            ),
+            results: nil
+        )
+    }
+
     func getMockResults() -> [RaceEntryData] {
         let mockDrivers = [
             ("Max Verstappen", "verstappen", "red_bull", "Red Bull Racing"),
