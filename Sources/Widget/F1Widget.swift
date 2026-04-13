@@ -795,14 +795,14 @@ struct UpcomingRaceSmallWidgetEntryView : View {
                     
                     // Footer
                     VStack(spacing: 0) {
-                        Text("\(race.circuit.location.locality), \(race.circuit.location.country)")
-                            .font(.system(size: 8, weight: .bold, design: .monospaced))
-                            .foregroundColor(.white.opacity(0.7))
+                        Text(race.circuit.location.locality.uppercased())
+                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                            .foregroundColor(.white)
                             .lineLimit(1)
                         
                         Text(formatRaceDate(race.date))
-                            .font(.system(size: 8, weight: .black, design: .monospaced))
-                            .foregroundColor(.white.opacity(0.7))
+                            .font(.system(size: 12, weight: .black, design: .monospaced))
+                            .foregroundColor(.white.opacity(0.9))
                     }
                     .padding(.bottom, 10)
                 }
