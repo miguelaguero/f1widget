@@ -228,6 +228,9 @@ struct RaceEntryData: Identifiable {
 }
 
 extension Color {
+    static let f1Red = Color(hex: "#E10600")
+    static let f1RedDark = Color(hex: "#8B0000")
+    
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
