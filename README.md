@@ -29,6 +29,7 @@ The ultimate countdown to the next Grand Prix.
 - **Features:** Displays race date, location, a live day countdown, and a predominant high-quality track map.
 
 ## Screenshots
+![Upcoming Race Widget](Screenshots/miami_grand_prix.png)
 ![Light Mode Previews](Screenshots/widgets_light.png)
 ![Dark Mode Previews](Screenshots/widgets_dark.png)
 ![Standings Widgets](Screenshots/standings.png)
