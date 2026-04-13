@@ -762,47 +762,62 @@ struct UpcomingRaceSmallWidgetEntryView : View {
     var entry: UpcomingRaceProvider.Entry
 
     var body: some View {
-        if let race = entry.race {
-            VStack(alignment: .center, spacing: 4) {
-                Text("UPCOMING")
-                    .font(.system(size: 8, weight: .bold, design: .monospaced))
-                    .foregroundColor(.white)
+        ZStack {
+            if let race = entry.race {
+                // Very center countdown
+                if let days = daysUntil(race.date) {
+                    VStack(spacing: -6) {
+                        Text("\(days)")
+                            .font(.system(size: 56, weight: .black, design: .rounded))
+                            .foregroundColor(.white)
+                        Text("DAYS")
+                            .font(.system(size: 14, weight: .bold, design: .monospaced))
+                            .foregroundColor(.white.opacity(0.9))
+                    }
+                }
                 
-                Text(race.raceName.uppercased())
-                    .font(.system(size: 16, weight: .black, design: .rounded))
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(3)
-                    .minimumScaleFactor(0.8)
-                
-                Spacer(minLength: 0)
-                
-                VStack(alignment: .center, spacing: 2) {
-                    Text("\(race.circuit.location.locality), \(race.circuit.location.country)")
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundColor(.white.opacity(0.8))
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
+                // Top and Bottom Info
+                VStack(spacing: 0) {
+                    // Header
+                    VStack(spacing: 1) {
+                        Text("UPCOMING")
+                            .font(.system(size: 8, weight: .bold, design: .monospaced))
+                            .foregroundColor(.white.opacity(0.7))
+                        
+                        Text(race.raceName.uppercased())
+                            .font(.system(size: 10, weight: .black, design: .rounded))
+                            .foregroundColor(.white.opacity(0.8))
+                            .lineLimit(1)
+                    }
+                    .padding(.top, 10)
                     
-                    Text(formatRaceDate(race.date))
-                        .font(.system(size: 10, weight: .black, design: .monospaced))
-                        .foregroundColor(.white)
+                    Spacer()
+                    
+                    // Footer
+                    VStack(spacing: 0) {
+                        Text("\(race.circuit.location.locality), \(race.circuit.location.country)")
+                            .font(.system(size: 8, weight: .bold, design: .monospaced))
+                            .foregroundColor(.white.opacity(0.7))
+                            .lineLimit(1)
+                        
+                        Text(formatRaceDate(race.date))
+                            .font(.system(size: 8, weight: .black, design: .monospaced))
+                            .foregroundColor(.white.opacity(0.7))
+                    }
+                    .padding(.bottom, 10)
+                }
+                .padding(.horizontal, 8)
+            } else {
+                VStack {
+                    Text("No upcoming race data")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.8))
                 }
             }
-            .padding(12)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .containerBackground(for: .widget) {
-                LinearGradient(colors: [.f1Red, .f1RedDark], startPoint: .topLeading, endPoint: .bottomTrailing)
-            }
-        } else {
-            VStack {
-                Text("No upcoming race data")
-                    .font(.caption)
-                    .foregroundColor(.white.opacity(0.8))
-            }
-            .containerBackground(for: .widget) {
-                LinearGradient(colors: [.f1Red, .f1RedDark], startPoint: .topLeading, endPoint: .bottomTrailing)
-            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .containerBackground(for: .widget) {
+            LinearGradient(colors: [.f1Red, .f1RedDark], startPoint: .topLeading, endPoint: .bottomTrailing)
         }
     }
 
@@ -814,6 +829,19 @@ struct UpcomingRaceSmallWidgetEntryView : View {
         let outputFormatter = DateFormatter()
         outputFormatter.dateFormat = "MMM d, yyyy"
         return outputFormatter.string(from: date).uppercased()
+    }
+
+    private func daysUntil(_ dateString: String) -> Int? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        guard let raceDate = dateFormatter.date(from: dateString) else { return nil }
+        
+        let calendar = Calendar.current
+        let startOfNow = calendar.startOfDay(for: Date())
+        let startOfRace = calendar.startOfDay(for: raceDate)
+        
+        let components = calendar.dateComponents([.day], from: startOfNow, to: startOfRace)
+        return components.day
     }
 }
 
