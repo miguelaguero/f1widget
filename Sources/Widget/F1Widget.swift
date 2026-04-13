@@ -766,12 +766,12 @@ struct UpcomingRaceSmallWidgetEntryView : View {
             if let race = entry.race {
                 // Very center countdown
                 if let days = daysUntil(race.date) {
-                    VStack(spacing: -6) {
+                    VStack(spacing: -2) {
                         Text("\(days)")
-                            .font(.system(size: 56, weight: .black, design: .rounded))
+                            .font(.system(size: 48, weight: .black, design: .rounded))
                             .foregroundColor(.white)
                         Text("DAYS")
-                            .font(.system(size: 14, weight: .bold, design: .monospaced))
+                            .font(.system(size: 12, weight: .bold, design: .monospaced))
                             .foregroundColor(.white.opacity(0.9))
                     }
                 }
@@ -785,26 +785,26 @@ struct UpcomingRaceSmallWidgetEntryView : View {
                             .foregroundColor(.white.opacity(0.7))
                         
                         Text(race.raceName.uppercased())
-                            .font(.system(size: 10, weight: .black, design: .rounded))
+                            .font(.system(size: 9, weight: .black, design: .rounded))
                             .foregroundColor(.white.opacity(0.8))
                             .lineLimit(1)
                     }
-                    .padding(.top, 10)
+                    .padding(.top, 8)
                     
                     Spacer()
                     
                     // Footer
                     VStack(spacing: 0) {
                         Text(race.circuit.location.locality.uppercased())
-                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                            .font(.system(size: 11, weight: .bold, design: .monospaced))
                             .foregroundColor(.white)
                             .lineLimit(1)
                         
                         Text(formatRaceDate(race.date))
-                            .font(.system(size: 12, weight: .black, design: .monospaced))
+                            .font(.system(size: 10, weight: .black, design: .monospaced))
                             .foregroundColor(.white.opacity(0.9))
                     }
-                    .padding(.bottom, 10)
+                    .padding(.bottom, 6)
                 }
                 .padding(.horizontal, 8)
             } else {
