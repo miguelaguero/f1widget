@@ -6,6 +6,7 @@ A native macOS widget that displays real-time Formula 1 results and standings.
 
 
 ## Features
+- **Live Timing Dashboard (New!):** Clicking any widget opens a native WebView with the [F1 Cosmos](https://f1cosmos.com/dashboard/live) live page for real-time race data and analysis.
 - Fetches real-time data from the Jolpica-F1 API.
 - Displays driver position, constructor icon, and driver name.
 - Supports Small, Medium, Large, and Extra Large widget sizes.
@@ -16,6 +17,7 @@ A native macOS widget that displays real-time Formula 1 results and standings.
 ### 🏁 Race Results
 Displays the latest Grand Prix results including the winner's photo (small size), team logos, and the top 10/12 finishers.
 - **Sizes:** Small, Medium, Large, Extra Large.
+- **Deep Linking:** Clicking any result opens the F1 Cosmos Live Timing Dashboard.
 - **Customization:** Long-press the widget to select results from any race in the current season.
 
 ### 🏆 Standings
@@ -25,10 +27,11 @@ Keep track of the championship battle throughout the season.
 
 ### 🗺️ Upcoming Race (New!)
 The ultimate countdown to the next Grand Prix.
-- **Sizes:** Extra Large.
+- **Sizes:** Small, Extra Large.
 - **Features:** Displays race date, location, a live day countdown, and a predominant high-quality track map.
 
 ## Screenshots
+![Live Timing Dashboard](Screenshots/live_dashboard.png)
 ![Upcoming Race Widget](Screenshots/miami_grand_prix.png)
 ![Light Mode Previews](Screenshots/widgets_light.png)
 ![Dark Mode Previews](Screenshots/widgets_dark.png)

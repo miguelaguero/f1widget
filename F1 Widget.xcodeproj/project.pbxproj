@@ -11,10 +11,12 @@
 		24E96967EE60387292DB2B5D /* DataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B1658B5580E64252CE3F3F /* DataService.swift */; };
 		3FD3412F7B5D0F3A9BAE5726 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45BF1E8E91AF3FE54F942ED6 /* Models.swift */; };
 		45D13577C4AF7092AE4E3DA1 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45BF1E8E91AF3FE54F942ED6 /* Models.swift */; };
+		8E8E6313173AD9B1E1B17DB9 /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD38F44DFB193D58DD6137DC /* WebView.swift */; };
 		9CAC20755945E866CC5DA332 /* F1WidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 56F7D7DD63F3D11DFD6C610A /* F1WidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9EA6FD0320626A84FBA9FE37 /* F1Widget.swift in Sources */ = {isa = PBXBuildFile; fileRef = F03FD25410510A24445FF462 /* F1Widget.swift */; };
 		B25278C4462DE29BCB0FDBFD /* DataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B1658B5580E64252CE3F3F /* DataService.swift */; };
 		B7F085DDDBB1CE606D9AEA13 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A9196CAAFD7CCC27FF63674A /* Assets.xcassets */; };
+		CC5ACBC72490AADEF25CAAB4 /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD38F44DFB193D58DD6137DC /* WebView.swift */; };
 		E231D86060CB9D7CEEA3CBD4 /* AppEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADCCCCFD629A9B26D6B7CB40 /* AppEntry.swift */; };
 /* End PBXBuildFile section */
 
@@ -48,6 +50,7 @@
 		56F7D7DD63F3D11DFD6C610A /* F1WidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = F1WidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E28CCCBF7B7172E48D5B9F5 /* F1WidgetApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = F1WidgetApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9196CAAFD7CCC27FF63674A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AD38F44DFB193D58DD6137DC /* WebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebView.swift; sourceTree = "<group>"; };
 		ADCCCCFD629A9B26D6B7CB40 /* AppEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEntry.swift; sourceTree = "<group>"; };
 		BC57A7FE4DBD5C3A3591F3CA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		F03FD25410510A24445FF462 /* F1Widget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = F1Widget.swift; sourceTree = "<group>"; };
@@ -88,6 +91,7 @@
 				A9196CAAFD7CCC27FF63674A /* Assets.xcassets */,
 				11B1658B5580E64252CE3F3F /* DataService.swift */,
 				45BF1E8E91AF3FE54F942ED6 /* Models.swift */,
+				AD38F44DFB193D58DD6137DC /* WebView.swift */,
 			);
 			name = Shared;
 			path = Sources/Shared;
@@ -202,6 +206,7 @@
 				E231D86060CB9D7CEEA3CBD4 /* AppEntry.swift in Sources */,
 				24E96967EE60387292DB2B5D /* DataService.swift in Sources */,
 				45D13577C4AF7092AE4E3DA1 /* Models.swift in Sources */,
+				CC5ACBC72490AADEF25CAAB4 /* WebView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -212,6 +217,7 @@
 				B25278C4462DE29BCB0FDBFD /* DataService.swift in Sources */,
 				9EA6FD0320626A84FBA9FE37 /* F1Widget.swift in Sources */,
 				3FD3412F7B5D0F3A9BAE5726 /* Models.swift in Sources */,
+				8E8E6313173AD9B1E1B17DB9 /* WebView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

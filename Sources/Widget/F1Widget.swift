@@ -320,7 +320,7 @@ struct F1WidgetEntryView : View {
                 .containerBackground(Color.clear, for: .widget)
             }
         }
-        .widgetURL(URL(string: "https://f1cosmos.com"))
+        .widgetURL(URL(string: "https://f1cosmos.com/dashboard/live"))
     }
 
     private var maxItems: Int {
@@ -414,7 +414,7 @@ struct StandingsWidgetEntryView : View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(Color.clear, for: .widget)
-        .widgetURL(URL(string: "https://f1cosmos.com"))
+        .widgetURL(URL(string: "https://f1cosmos.com/dashboard/live"))
     }
 
     @ViewBuilder
@@ -586,7 +586,7 @@ struct ConstructorStandingsWidgetEntryView : View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(Color.clear, for: .widget)
-        .widgetURL(URL(string: "https://f1cosmos.com"))
+        .widgetURL(URL(string: "https://f1cosmos.com/dashboard/live"))
     }
 }
 
@@ -639,84 +639,87 @@ struct UpcomingRaceWidgetEntryView : View {
     @Environment(\.widgetFamily) var family
 
     var body: some View {
-        if let race = entry.race {
-            VStack(spacing: 0) {
-                // Top Header Row
-                HStack(alignment: .top) {
-                    // Left: Race Name and Location
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("UPCOMING")
-                            .font(.system(size: 10, weight: .bold, design: .monospaced))
-                            .foregroundColor(.white)
-                        
-                        Text(race.raceName.uppercased())
-                            .font(.system(size: 20, weight: .black, design: .rounded))
-                            .foregroundColor(.white)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
-                        
-                        Text("\(race.circuit.location.locality), \(race.circuit.location.country)")
-                            .font(.system(size: 12, weight: .bold, design: .monospaced))
-                            .foregroundColor(.white.opacity(0.8))
-                            .lineLimit(1)
-                    }
-                    
-                    Spacer()
-                    
-                    // Right: Date and Countdown
-                    VStack(alignment: .trailing, spacing: 0) {
-                        Text(formatRaceDate(race.date))
-                            .font(.system(size: 12, weight: .bold, design: .monospaced))
-                            .foregroundColor(.white.opacity(0.8))
-                        
-                        if let days = daysUntil(race.date) {
-                            Text("\(days) DAYS")
-                                .font(.system(size: 28, weight: .black, design: .rounded))
+        Group {
+            if let race = entry.race {
+                VStack(spacing: 0) {
+                    // Top Header Row
+                    HStack(alignment: .top) {
+                        // Left: Race Name and Location
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("UPCOMING")
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
                                 .foregroundColor(.white)
+                            
+                            Text(race.raceName.uppercased())
+                                .font(.system(size: 20, weight: .black, design: .rounded))
+                                .foregroundColor(.white)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                            
+                            Text("\(race.circuit.location.locality), \(race.circuit.location.country)")
+                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                .foregroundColor(.white.opacity(0.8))
+                                .lineLimit(1)
+                        }
+                        
+                        Spacer()
+                        
+                        // Right: Date and Countdown
+                        VStack(alignment: .trailing, spacing: 0) {
+                            Text(formatRaceDate(race.date))
+                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                .foregroundColor(.white.opacity(0.8))
+                            
+                            if let days = daysUntil(race.date) {
+                                Text("\(days) DAYS")
+                                    .font(.system(size: 28, weight: .black, design: .rounded))
+                                    .foregroundColor(.white)
+                            }
                         }
                     }
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, 20)
-                
-                Spacer(minLength: 12)
-                
-                // Bottom: Centered Track Map
-                if let trackMapData = entry.trackMapData, let platformImage = PlatformImage(data: trackMapData) {
-                    VStack {
-                        #if canImport(AppKit)
-                        Image(nsImage: platformImage)
-                            .renderingMode(.original)
-                            .resizable()
-                            .scaledToFit()
-                        #elseif canImport(UIKit)
-                        Image(uiImage: platformImage)
-                            .renderingMode(.original)
-                            .resizable()
-                            .scaledToFit()
-                        #endif
+                    .padding(.horizontal, 24)
+                    .padding(.top, 20)
+                    
+                    Spacer(minLength: 12)
+                    
+                    // Bottom: Centered Track Map
+                    if let trackMapData = entry.trackMapData, let platformImage = PlatformImage(data: trackMapData) {
+                        VStack {
+                            #if canImport(AppKit)
+                            Image(nsImage: platformImage)
+                                .renderingMode(.original)
+                                .resizable()
+                                .scaledToFit()
+                            #elseif canImport(UIKit)
+                            Image(uiImage: platformImage)
+                                .renderingMode(.original)
+                                .resizable()
+                                .scaledToFit()
+                            #endif
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .padding(.horizontal, 40)
+                        .padding(.bottom, 24)
+                    } else {
+                        Spacer()
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .padding(.horizontal, 40)
-                    .padding(.bottom, 24)
-                } else {
-                    Spacer()
                 }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .containerBackground(for: .widget) {
-                LinearGradient(colors: [.f1Red, .f1RedDark], startPoint: .topLeading, endPoint: .bottomTrailing)
-            }
-        } else {
-            VStack {
-                Text("No upcoming race data")
-                    .font(.caption)
-                    .foregroundColor(.white.opacity(0.8))
-            }
-            .containerBackground(for: .widget) {
-                LinearGradient(colors: [.f1Red, .f1RedDark], startPoint: .topLeading, endPoint: .bottomTrailing)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .containerBackground(for: .widget) {
+                    LinearGradient(colors: [.f1Red, .f1RedDark], startPoint: .topLeading, endPoint: .bottomTrailing)
+                }
+            } else {
+                VStack {
+                    Text("No upcoming race data")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.8))
+                }
+                .containerBackground(for: .widget) {
+                    LinearGradient(colors: [.f1Red, .f1RedDark], startPoint: .topLeading, endPoint: .bottomTrailing)
+                }
             }
         }
+        .widgetURL(URL(string: "https://f1cosmos.com/dashboard/live"))
     }
 
     private func formatRaceDate(_ dateString: String) -> String {
@@ -819,6 +822,7 @@ struct UpcomingRaceSmallWidgetEntryView : View {
         .containerBackground(for: .widget) {
             LinearGradient(colors: [.f1Red, .f1RedDark], startPoint: .topLeading, endPoint: .bottomTrailing)
         }
+        .widgetURL(URL(string: "https://f1cosmos.com/dashboard/live"))
     }
 
     private func formatRaceDate(_ dateString: String) -> String {
