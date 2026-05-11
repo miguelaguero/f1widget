@@ -49,6 +49,53 @@ targets:
       AD_HOC_CODE_SIGNING_ALLOWED: YES
       CODE_SIGN_ENTITLEMENTS: Sources/Shared/Entitlements.plist
 
+  F1WidgetApp_iOS:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - Sources/App
+      - path: Sources/Shared
+        excludes:
+          - Entitlements.plist
+    dependencies:
+      - target: F1WidgetExtension_iOS
+        embed: true
+    settings:
+      GENERATE_INFOPLIST_FILE: YES
+      PRODUCT_NAME: F1 Widget
+      ASSETCATALOG_APPICON_NAME: AppIcon
+      INFOPLIST_KEY_CFBundleDisplayName: F1 Widget
+      INFOPLIST_KEY_CFBundleName: F1 Widget
+      PRODUCT_BUNDLE_IDENTIFIER: com.f1widget.app
+      MARKETING_VERSION: "1.1"
+      CURRENT_PROJECT_VERSION: "2"
+      CODE_SIGN_IDENTITY: "-"
+      AD_HOC_CODE_SIGNING_ALLOWED: YES
+      CODE_SIGN_ENTITLEMENTS: Sources/Shared/Entitlements.plist
+      TARGETED_DEVICE_FAMILY: "1,2"
+
+  F1WidgetExtension_iOS:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - Sources/Widget
+      - path: Sources/Shared
+        excludes:
+          - Entitlements.plist
+    settings:
+      GENERATE_INFOPLIST_FILE: NO
+      INFOPLIST_FILE: Sources/Widget/Info.plist
+      PRODUCT_NAME: F1WidgetExtension
+      ASSETCATALOG_APPICON_NAME: AppIcon
+      INFOPLIST_KEY_CFBundleDisplayName: F1 Widget
+      INFOPLIST_KEY_CFBundleName: F1 Widget
+      PRODUCT_BUNDLE_IDENTIFIER: com.f1widget.app.widget
+      CODE_SIGN_IDENTITY: "-"
+      AD_HOC_CODE_SIGNING_ALLOWED: YES
+      CODE_SIGN_ENTITLEMENTS: Sources/Shared/Entitlements.plist
+
 schemes:
   F1WidgetApp:
     build:
@@ -56,3 +103,10 @@ schemes:
         F1WidgetApp: [all]
     run:
       executable: F1WidgetApp
+  
+  F1WidgetApp_iOS:
+    build:
+      targets:
+        F1WidgetApp_iOS: [all]
+    run:
+      executable: F1WidgetApp_iOS
